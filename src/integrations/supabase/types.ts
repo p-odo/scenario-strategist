@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           ai_score: number | null
           created_at: string
+          feedback: string | null
           group_id: string
           id: string
           prompt: string
@@ -27,6 +28,7 @@ export type Database = {
         Insert: {
           ai_score?: number | null
           created_at?: string
+          feedback?: string | null
           group_id: string
           id?: string
           prompt: string
@@ -36,6 +38,7 @@ export type Database = {
         Update: {
           ai_score?: number | null
           created_at?: string
+          feedback?: string | null
           group_id?: string
           id?: string
           prompt?: string

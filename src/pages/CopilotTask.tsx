@@ -51,10 +51,13 @@ export default function CopilotTask() {
         body: { prompt, modelAnswer },
       });
 
-      if (response.data?.score) {
+      if (response.data?.score !== undefined) {
         await supabase
           .from("copilot_submissions")
-          .update({ ai_score: response.data.score })
+          .update({ 
+            ai_score: response.data.score,
+            feedback: response.data.feedback || null
+          })
           .eq("id", submissionData.id);
       }
     } catch (error) {
