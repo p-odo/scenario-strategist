@@ -5,7 +5,7 @@ import { Header } from "@/components/Header";
 import { useGroupStore } from "@/hooks/useGroupStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Search, Layers, DollarSign, Star, Clock, X, Sparkles } from "lucide-react";
+import { Search, Layers, DollarSign, Star, Clock, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -82,6 +82,7 @@ export default function Task() {
       if (error) throw error;
 
       toast.success("Choice saved!");
+      setSelectedOption(null); // Close modal before navigation
       
       const nextTaskNumber = parseInt(taskNumber!) + 1;
       if (nextTaskNumber <= tasks.length) {
@@ -124,7 +125,14 @@ export default function Task() {
           <div className="flex items-center gap-4 mb-6">
             {tasks.map((t, index) => (
               <div key={t.id} className="flex items-center">
-                <div className={`flex items-center gap-2 ${index <= currentTaskIndex ? "" : "opacity-40"}`}>
+                <div 
+                  className={`flex items-center gap-2 ${index <= currentTaskIndex ? "" : "opacity-40"} ${index < currentTaskIndex ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}`}
+                  onClick={() => {
+                    if (index < currentTaskIndex) {
+                      navigate(`/scenario/${scenarioId}/task/${index + 1}`);
+                    }
+                  }}
+                >
                   {index < currentTaskIndex ? (
                     <div className="w-10 h-10 rounded-full bg-success flex items-center justify-center text-success-foreground">
                       ✓
@@ -210,16 +218,7 @@ export default function Task() {
           
           <div className="grid md:grid-cols-3 gap-6 p-6">
             {/* Option Details Card */}
-            <Card className="md:col-span-2 p-6 relative border-border bg-card">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-4 right-4"
-                onClick={handleCloseModal}
-              >
-                <X className="w-5 h-5" />
-              </Button>
-              
+            <Card className="md:col-span-2 p-6 border-border bg-card">
               <div className="flex items-start gap-4 mb-6">
                 {selectedOption && getIcon(selectedOption.icon)}
                 <div className="flex-1">
