@@ -91,9 +91,8 @@ export default function Complete() {
         return;
       }
 
-      // Calculate weighted score
+      // Calculate total score by summing all task scores
       let totalScore = 0;
-      let validChoicesCount = 0;
 
       choicesResult.data.forEach((choice) => {
         const option = optionsResult.data?.find((opt) => opt.id === choice.option_id);
@@ -103,13 +102,10 @@ export default function Complete() {
             option.time_score * 0.3 +
             option.cost_score * 0.3;
           totalScore += weightedScore;
-          validChoicesCount++;
         }
       });
 
-      if (validChoicesCount > 0) {
-        setScore(totalScore / validChoicesCount);
-      }
+      setScore(totalScore);
 
       // Mark as completed
       await supabase
