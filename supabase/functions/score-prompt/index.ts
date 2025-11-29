@@ -14,12 +14,35 @@ serve(async (req) => {
   try {
     const { prompt, modelAnswer } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    console.log("Scoring prompt:", prompt.substring(0, 500) + "...");
+    console.log("Scoring prompt:", (prompt || "").substring(0, 500) + "...");
+
+    // Ask the model to return a JSON object with a numeric score and a feedback string
+    const systemContent = `You are an expert prompt evaluator. Evaluate how well the user's prompt aligns with the provided model answer. Consider:
+1. Clarity and specificity
+2. Coverage of required elements
+3. Proper structure and formatting
+4. Responsible AI principles
+5. Overall effectiveness
+
+Return ONLY a JSON object with two fields:
+- score: a number between 0 and 5
+- feedback: a string explaining why the prompt is good or bad and how to improve it.
+
+Do not include additional text.`;
+
+    const userContent = `Model Answer:
+${modelAnswer}
+
+Evaluate this prompt and return the JSON object described above for the following prompt:
+
+${prompt}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -30,24 +53,8 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          {
-            role: "system",
-            content: `You are an expert prompt evaluator for Microsoft Copilot. Evaluate how well the user's prompt aligns with the model answer. Consider:
-1. Clarity and specificity
-2. Coverage of required elements
-3. Proper structure and formatting
-4. Responsible AI principles
-5. Overall effectiveness
-
-Model Answer:
-${"Create an Executive Compliance Report summarising all submitted filings. Include: Document names and categories, Filing destinations (regulatory portals), Status of each submission, Compliance check against required standards; Present in a structured table with a brief narrative overview.}
-
-Return ONLY a numerical score between 0-5 as a single number, nothing else.`,
-          },
-          {
-            role: "user",
-            content: `Evaluate this prompt and return only a score (0-5):\n\n${prompt}`,
-          },
+          { role: "system", content: systemContent },
+          { role: "user", content: userContent },
         ],
       }),
     });
@@ -71,13 +78,79 @@ Return ONLY a numerical score between 0-5 as a single number, nothing else.`,
     }
 
     const data = await response.json();
-    const scoreText = data.choices?.[0]?.message?.content || "50";
-    const score = parseFloat(scoreText.match(/\d+(\.\d+)?/)?.[0] || "50");
+    let content = data.choices?.[0]?.message?.content || "";
+
+    // Trim code fences if present
+    content = content.trim().replace(/^```(?:json)?\n/, "").replace(/\n```$/, "");
+
+    // Try to extract JSON
+    let parsed: { score?: number | string; feedback?: string } | null = null;
+    try {
+      parsed = JSON.parse(content);
+    } catch (e) {
+      const match = content.match(/\{[\s\S]*\}/);
+      if (match) {
+        try {
+          parsed = JSON.parse(match[0]);
+        } catch (e2) {
+          console.error("Failed to parse JSON from model response:", e2, "raw content:", content);
+        }
+      } else {
+        console.error("No JSON object found in model response:", content);
+      }
+    }
+
+    // Fallbacks
+    let score = 0;
+    let feedback = "";
+
+    if (parsed) {
+      if (typeof parsed.score === "number") {
+        score = parsed.score;
+      } else if (typeof parsed.score === "string") {
+        score = parseFloat(parsed.score) || 0;
+      } else {
+        const numMatch = content.match(/\d+(\.\d+)?/);
+        score = numMatch ? parseFloat(numMatch[0]) : 0;
+      }
+      feedback = parsed.feedback ? String(parsed.feedback) : "";
+    } else {
+      const numMatch = content.match(/\d+(\.\d+)?/);
+      score = numMatch ? parseFloat(numMatch[0]) : 0;
+      feedback = content.replace(/\r|\n/g, " ").slice(0, 2000);
+    }
+
+    // Normalize to 0-5
+    score = Math.max(0, Math.min(5, Number(score)));
 
     console.log("Calculated score:", score);
 
+    // Store feedback in Supabase if configured
+    if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+        const insertPayload = {
+          prompt,
+          model_answer: modelAnswer,
+          score,
+          feedback,
+          created_at: new Date().toISOString(),
+        };
+        const { error: insertError } = await supabase.from("prompt_feedback").insert([insertPayload]);
+        if (insertError) {
+          console.error("Failed to store feedback in Supabase:", insertError);
+        } else {
+          console.log("Stored prompt feedback in Supabase");
+        }
+      } catch (e) {
+        console.error("Error storing feedback in Supabase:", e);
+      }
+    } else {
+      console.log("Supabase not configured; skipping storage of feedback");
+    }
+
     return new Response(
-      JSON.stringify({ score: Math.min(100, Math.max(0, score)) }),
+      JSON.stringify({ score, feedback }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
