@@ -119,8 +119,41 @@ export default function Complete() {
     }
   };
 
-  const handleComplete = () => {
-    navigate("/home");
+  const handleComplete = async () => {
+    try {
+      // Delete all choices for this group and scenario
+      const tasksResult = await supabase
+        .from("tasks")
+        .select("id")
+        .eq("scenario_id", scenarioId);
+
+      const taskIds = tasksResult.data?.map((t) => t.id) || [];
+
+      if (taskIds.length > 0) {
+        await supabase
+          .from("group_choices")
+          .delete()
+          .eq("group_id", groupId)
+          .in("task_id", taskIds);
+      }
+
+      // Reset progress for this scenario
+      await supabase
+        .from("group_progress")
+        .update({
+          current_task: 1,
+          started_at: null,
+          completed_at: null,
+        })
+        .eq("group_id", groupId)
+        .eq("scenario_id", scenarioId);
+
+      toast.success("Session completed and reset successfully");
+      navigate("/home");
+    } catch (error) {
+      console.error("Error resetting session:", error);
+      toast.error("Failed to reset session");
+    }
   };
 
   if (!scenario) {
