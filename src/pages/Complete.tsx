@@ -25,47 +25,102 @@ export default function Complete() {
   }, [groupId, scenarioId]);
 
   const loadData = async () => {
-    const scenarioResult = await supabase.from("scenarios").select("*").eq("id", scenarioId).single();
-    
-    // Get tasks for this scenario
-    const tasksResult = await supabase.from("tasks").select("id").eq("scenario_id", scenarioId);
-    const taskIds = tasksResult.data?.map(t => t.id) || [];
-    
-    // Get choices with options
-    const choicesResult = await supabase
-      .from("group_choices")
-      .select("*, options(*)")
-      .eq("group_id", groupId)
-      .in("task_id", taskIds);
+    try {
+      const scenarioResult = await supabase
+        .from("scenarios")
+        .select("*")
+        .eq("id", scenarioId)
+        .maybeSingle();
 
-    if (scenarioResult.error || !scenarioResult.data) {
-      toast.error("Scenario not found");
-      navigate("/home");
-      return;
-    }
+      if (scenarioResult.error || !scenarioResult.data) {
+        toast.error("Scenario not found");
+        navigate("/home");
+        return;
+      }
 
-    setScenario(scenarioResult.data);
+      setScenario(scenarioResult.data);
 
-    // Calculate weighted score
-    if (choicesResult.data && choicesResult.data.length > 0) {
+      // Get tasks for this scenario
+      const tasksResult = await supabase
+        .from("tasks")
+        .select("id, order_index")
+        .eq("scenario_id", scenarioId)
+        .order("order_index");
+
+      const taskIds = tasksResult.data?.map((t) => t.id) || [];
+
+      if (taskIds.length === 0) {
+        console.log("No tasks found for scenario");
+        return;
+      }
+
+      // Get choices with their corresponding options
+      const choicesResult = await supabase
+        .from("group_choices")
+        .select(`
+          id,
+          task_id,
+          option_id,
+          created_at
+        `)
+        .eq("group_id", groupId)
+        .in("task_id", taskIds);
+
+      if (choicesResult.error) {
+        console.error("Error fetching choices:", choicesResult.error);
+        toast.error("Failed to load choices");
+        return;
+      }
+
+      if (!choicesResult.data || choicesResult.data.length === 0) {
+        console.log("No choices found for group");
+        setScore(0);
+        return;
+      }
+
+      // Get the options for each choice
+      const optionIds = choicesResult.data.map((c) => c.option_id);
+      const optionsResult = await supabase
+        .from("options")
+        .select("*")
+        .in("id", optionIds);
+
+      if (optionsResult.error) {
+        console.error("Error fetching options:", optionsResult.error);
+        toast.error("Failed to load option details");
+        return;
+      }
+
+      // Calculate weighted score
       let totalScore = 0;
-      choicesResult.data.forEach((choice: any) => {
-        const option = choice.options;
-        const weightedScore =
-          option.business_impact_score * 0.4 +
-          option.time_score * 0.3 +
-          option.cost_score * 0.3;
-        totalScore += weightedScore;
-      });
-      setScore(totalScore / choicesResult.data.length);
-    }
+      let validChoicesCount = 0;
 
-    // Mark as completed
-    await supabase
-      .from("group_progress")
-      .update({ completed_at: new Date().toISOString() })
-      .eq("group_id", groupId)
-      .eq("scenario_id", scenarioId);
+      choicesResult.data.forEach((choice) => {
+        const option = optionsResult.data?.find((opt) => opt.id === choice.option_id);
+        if (option) {
+          const weightedScore =
+            option.business_impact_score * 0.4 +
+            option.time_score * 0.3 +
+            option.cost_score * 0.3;
+          totalScore += weightedScore;
+          validChoicesCount++;
+        }
+      });
+
+      if (validChoicesCount > 0) {
+        setScore(totalScore / validChoicesCount);
+      }
+
+      // Mark as completed
+      await supabase
+        .from("group_progress")
+        .update({ completed_at: new Date().toISOString() })
+        .eq("group_id", groupId)
+        .eq("scenario_id", scenarioId);
+    } catch (error) {
+      console.error("Error in loadData:", error);
+      toast.error("An error occurred while loading data");
+    }
   };
 
   const handleComplete = () => {
