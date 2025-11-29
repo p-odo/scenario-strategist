@@ -40,7 +40,7 @@ serve(async (req) => {
 5. Overall effectiveness
 
 Model Answer:
-${modelAnswer}
+${"Create an Executive Compliance Report summarising all submitted filings. Include: Document names and categories, Filing destinations (regulatory portals), Status of each submission, Compliance check against required standards; Present in a structured table with a brief narrative overview.}
 
 Return ONLY a numerical score between 0-5 as a single number, nothing else.`,
           },
