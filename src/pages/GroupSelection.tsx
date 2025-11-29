@@ -72,14 +72,12 @@ export default function GroupSelection() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-primary">Space Mission Control</h1>
           <div className="flex items-center gap-2">
-            {user && (
+            {isAdmin && (
               <>
-                {isAdmin && (
-                  <Button variant="outline" onClick={() => navigate('/admin')}>
-                    <Shield className="w-4 h-4 mr-2" />
-                    Admin
-                  </Button>
-                )}
+                <Button variant="outline" onClick={() => navigate('/admin')}>
+                  <Shield className="w-4 h-4 mr-2" />
+                  Admin
+                </Button>
                 <Button variant="ghost" onClick={signOut}>
                   <LogOut className="w-4 h-4 mr-2" />
                   Logout
@@ -87,8 +85,8 @@ export default function GroupSelection() {
               </>
             )}
             {!user && (
-              <Button onClick={() => navigate('/auth')}>
-                Login
+              <Button variant="ghost" size="sm" onClick={() => navigate('/auth')}>
+                Admin Login
               </Button>
             )}
           </div>
