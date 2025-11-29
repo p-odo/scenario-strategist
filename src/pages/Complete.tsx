@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { Header } from "@/components/Header";
 import { useGroupStore } from "@/hooks/useGroupStore";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +15,10 @@ export default function Complete() {
   const { groupId, groupName } = useGroupStore();
   const [scenario, setScenario] = useState<any>(null);
   const [score, setScore] = useState<number | null>(null);
+  const [businessScore, setBusinessScore] = useState<number>(0);
+  const [timeScore, setTimeScore] = useState<number>(0);
+  const [costScore, setCostScore] = useState<number>(0);
+  const [maxScore, setMaxScore] = useState<number>(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -104,8 +109,11 @@ export default function Complete() {
         return;
       }
 
-      // Calculate total score by summing all task scores (using unique/latest choice per task)
+      // Calculate total score and individual metric scores
       let totalScore = 0;
+      let totalBusiness = 0;
+      let totalTime = 0;
+      let totalCost = 0;
 
       uniqueChoices.forEach((choice) => {
         const option = optionsResult.data?.find((opt) => opt.id === choice.option_id);
@@ -115,10 +123,18 @@ export default function Complete() {
             option.time_score * 0.3 +
             option.cost_score * 0.3;
           totalScore += weightedScore;
+          totalBusiness += option.business_impact_score;
+          totalTime += option.time_score;
+          totalCost += option.cost_score;
         }
       });
 
+      const maxPossible = uniqueChoices.length * 5;
       setScore(totalScore);
+      setBusinessScore(totalBusiness);
+      setTimeScore(totalTime);
+      setCostScore(totalCost);
+      setMaxScore(maxPossible);
 
       // Mark as completed
       await supabase
@@ -208,12 +224,42 @@ export default function Complete() {
               You have completed this scenario! Please wait for the session host for next instructions.
             </h2>
             {score !== null && (
-              <div className="mb-6">
-                <p className="text-lg text-muted-foreground mb-2">Your Score:</p>
-                <p className="text-5xl font-bold text-primary">{score.toFixed(1)}</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Based on Business Impact (40%), Time (30%), and Cost (30%)
-                </p>
+              <div className="mb-8">
+                <p className="text-lg text-muted-foreground mb-2">Your Total Score:</p>
+                <p className="text-5xl font-bold text-primary mb-6">{score.toFixed(1)}</p>
+                
+                {/* Progress Bars */}
+                <div className="space-y-6 text-left">
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-medium">Business Impact</span>
+                      <span className="text-sm text-muted-foreground">
+                        {businessScore.toFixed(1)} / {maxScore} ({((businessScore / maxScore) * 100).toFixed(0)}%)
+                      </span>
+                    </div>
+                    <Progress value={(businessScore / maxScore) * 100} className="h-3" />
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-medium">Time Efficiency</span>
+                      <span className="text-sm text-muted-foreground">
+                        {timeScore.toFixed(1)} / {maxScore} ({((timeScore / maxScore) * 100).toFixed(0)}%)
+                      </span>
+                    </div>
+                    <Progress value={(timeScore / maxScore) * 100} className="h-3" />
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-medium">Cost Effectiveness</span>
+                      <span className="text-sm text-muted-foreground">
+                        {costScore.toFixed(1)} / {maxScore} ({((costScore / maxScore) * 100).toFixed(0)}%)
+                      </span>
+                    </div>
+                    <Progress value={(costScore / maxScore) * 100} className="h-3" />
+                  </div>
+                </div>
               </div>
             )}
           </div>
