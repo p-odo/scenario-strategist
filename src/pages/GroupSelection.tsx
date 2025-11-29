@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
 import { useGroupStore } from "@/hooks/useGroupStore";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { LogOut, Shield } from "lucide-react";
 import spaceHeroBg from "@/assets/space-hero-bg.jpg";
 
 export default function GroupSelection() {
@@ -15,6 +16,7 @@ export default function GroupSelection() {
   const [isCreating, setIsCreating] = useState(false);
   const navigate = useNavigate();
   const setGroup = useGroupStore((state) => state.setGroup);
+  const { user, isAdmin, signOut } = useAuth();
 
   useEffect(() => {
     loadGroups();
@@ -65,7 +67,33 @@ export default function GroupSelection() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      {/* Header */}
+      <header className="border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-primary">Space Mission Control</h1>
+          <div className="flex items-center gap-2">
+            {user && (
+              <>
+                {isAdmin && (
+                  <Button variant="outline" onClick={() => navigate('/admin')}>
+                    <Shield className="w-4 h-4 mr-2" />
+                    Admin
+                  </Button>
+                )}
+                <Button variant="ghost" onClick={signOut}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </Button>
+              </>
+            )}
+            {!user && (
+              <Button onClick={() => navigate('/auth')}>
+                Login
+              </Button>
+            )}
+          </div>
+        </div>
+      </header>
       
       <div 
         className="relative py-20 bg-cover bg-center"

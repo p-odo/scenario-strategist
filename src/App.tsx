@@ -10,6 +10,8 @@ import Task from "./pages/Task";
 import OptionConfirmation from "./pages/OptionConfirmation";
 import CopilotTask from "./pages/CopilotTask";
 import Complete from "./pages/Complete";
+import Auth from "./pages/Auth";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +24,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<GroupSelection />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="/home" element={<Home />} />
           <Route path="/scenario/:scenarioId" element={<ScenarioConfirmation />} />
           <Route path="/scenario/:scenarioId/task/:taskNumber" element={<Task />} />
