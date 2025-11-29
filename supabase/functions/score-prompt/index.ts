@@ -23,7 +23,7 @@ serve(async (req) => {
 
     console.log("Scoring prompt:", (prompt || "").substring(0, 500) + "...");
 
-    // Ask the model to return a JSON object with a numeric score and a feedback string
+    // Ask the model to return a JSON object with score, feedback, and enhanced prompt
     const systemContent = `You are an expert prompt evaluator. Evaluate how well the user's prompt aligns with the provided model answer. Consider:
 1. Clarity and specificity
 2. Coverage of required elements
@@ -31,9 +31,10 @@ serve(async (req) => {
 4. Responsible AI principles
 5. Overall effectiveness
 
-Return ONLY a JSON object with two fields:
+Return ONLY a JSON object with three fields:
 - score: a number between 0 and 5
-- feedback: a string explaining why the prompt is good or bad and how to improve it.
+- feedback: a string explaining why the prompt is good or bad and how to improve it
+- enhanced_prompt: an improved version of the user's prompt that addresses the issues identified
 
 Do not include additional text.`;
 
@@ -84,7 +85,7 @@ ${prompt}`;
     content = content.trim().replace(/^```(?:json)?\n/, "").replace(/\n```$/, "");
 
     // Try to extract JSON
-    let parsed: { score?: number | string; feedback?: string } | null = null;
+    let parsed: { score?: number | string; feedback?: string; enhanced_prompt?: string } | null = null;
     try {
       parsed = JSON.parse(content);
     } catch (e) {
@@ -103,6 +104,7 @@ ${prompt}`;
     // Fallbacks
     let score = 0;
     let feedback = "";
+    let enhanced_prompt = "";
 
     if (parsed) {
       if (typeof parsed.score === "number") {
@@ -114,10 +116,12 @@ ${prompt}`;
         score = numMatch ? parseFloat(numMatch[0]) : 0;
       }
       feedback = parsed.feedback ? String(parsed.feedback) : "";
+      enhanced_prompt = parsed.enhanced_prompt ? String(parsed.enhanced_prompt) : prompt;
     } else {
       const numMatch = content.match(/\d+(\.\d+)?/);
       score = numMatch ? parseFloat(numMatch[0]) : 0;
       feedback = content.replace(/\r|\n/g, " ").slice(0, 2000);
+      enhanced_prompt = prompt;
     }
 
     // Normalize to 0-5
@@ -150,7 +154,7 @@ ${prompt}`;
     }
 
     return new Response(
-      JSON.stringify({ score, feedback }),
+      JSON.stringify({ score, feedback, enhanced_prompt }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

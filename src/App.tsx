@@ -9,6 +9,8 @@ import ScenarioConfirmation from "./pages/ScenarioConfirmation";
 import Task from "./pages/Task";
 import OptionConfirmation from "./pages/OptionConfirmation";
 import CopilotTask from "./pages/CopilotTask";
+import CopilotFeedback from "./pages/CopilotFeedback";
+import CopilotEnhanced from "./pages/CopilotEnhanced";
 import Complete from "./pages/Complete";
 import NotFound from "./pages/NotFound";
 
@@ -27,6 +29,8 @@ const App = () => (
           <Route path="/scenario/:scenarioId/task/:taskNumber" element={<Task />} />
           <Route path="/scenario/:scenarioId/task/:taskNumber/option/:optionId" element={<OptionConfirmation />} />
           <Route path="/scenario/:scenarioId/copilot" element={<CopilotTask />} />
+          <Route path="/scenario/:scenarioId/copilot/feedback" element={<CopilotFeedback />} />
+          <Route path="/scenario/:scenarioId/copilot/enhanced" element={<CopilotEnhanced />} />
           <Route path="/scenario/:scenarioId/complete" element={<Complete />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
