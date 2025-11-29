@@ -19,7 +19,7 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    console.log("Scoring prompt:", prompt.substring(0, 100) + "...");
+    console.log("Scoring prompt:", prompt.substring(0, 500) + "...");
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -42,11 +42,11 @@ serve(async (req) => {
 Model Answer:
 ${modelAnswer}
 
-Return ONLY a numerical score between 0-100 as a single number, nothing else.`,
+Return ONLY a numerical score between 0-5 as a single number, nothing else.`,
           },
           {
             role: "user",
-            content: `Evaluate this prompt and return only a score (0-100):\n\n${prompt}`,
+            content: `Evaluate this prompt and return only a score (0-5):\n\n${prompt}`,
           },
         ],
       }),
