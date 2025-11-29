@@ -5,8 +5,10 @@ import { Header } from "@/components/Header";
 import { useGroupStore } from "@/hooks/useGroupStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Search, Layers, DollarSign, Star, Clock } from "lucide-react";
+import { Search, Layers, DollarSign, Star, Clock, X, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export default function Task() {
   const { scenarioId, taskNumber } = useParams();
@@ -15,6 +17,8 @@ export default function Task() {
   const [task, setTask] = useState<any>(null);
   const [options, setOptions] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
+  const [selectedOption, setSelectedOption] = useState<any>(null);
+  const [isConfirming, setIsConfirming] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -59,7 +63,42 @@ export default function Task() {
   };
 
   const handleOptionSelect = (option: any) => {
-    navigate(`/scenario/${scenarioId}/task/${taskNumber}/option/${option.id}`);
+    setSelectedOption(option);
+  };
+
+  const handleConfirm = async () => {
+    if (!selectedOption || !groupId || !task) return;
+    
+    setIsConfirming(true);
+    try {
+      const { error } = await supabase
+        .from("group_choices")
+        .insert({
+          group_id: groupId,
+          task_id: task.id,
+          option_id: selectedOption.id,
+        });
+
+      if (error) throw error;
+
+      toast.success("Choice saved!");
+      
+      const nextTaskNumber = parseInt(taskNumber!) + 1;
+      if (nextTaskNumber <= tasks.length) {
+        navigate(`/scenario/${scenarioId}/task/${nextTaskNumber}`);
+      } else {
+        navigate(`/scenario/${scenarioId}/complete`);
+      }
+    } catch (error) {
+      console.error("Error saving choice:", error);
+      toast.error("Failed to save choice");
+    } finally {
+      setIsConfirming(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setSelectedOption(null);
   };
 
   const getIcon = (iconName: string | null) => {
@@ -162,6 +201,72 @@ export default function Task() {
           ))}
         </div>
       </div>
+
+      <Dialog open={!!selectedOption} onOpenChange={(open) => !open && handleCloseModal()}>
+        <DialogContent className="max-w-5xl p-0 gap-0 bg-background/95 backdrop-blur-sm border-border">
+          <DialogHeader className="p-6 pb-4 border-b border-border">
+            <DialogTitle className="text-2xl font-bold">CONFIRM YOUR SELECTION?</DialogTitle>
+          </DialogHeader>
+          
+          <div className="grid md:grid-cols-3 gap-6 p-6">
+            {/* Option Details Card */}
+            <Card className="md:col-span-2 p-6 relative border-border bg-card">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-4 right-4"
+                onClick={handleCloseModal}
+              >
+                <X className="w-5 h-5" />
+              </Button>
+              
+              <div className="flex items-start gap-4 mb-6">
+                {selectedOption && getIcon(selectedOption.icon)}
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold mb-2">{selectedOption?.title}</h3>
+                  <p className="text-muted-foreground">{selectedOption?.description}</p>
+                </div>
+              </div>
+
+              {selectedOption?.implications && selectedOption.implications.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="font-semibold mb-3 text-lg">Implications/Approach:</h4>
+                  <ul className="space-y-2">
+                    {selectedOption.implications.map((implication: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <span className="text-primary mt-1">•</span>
+                        <span className="text-muted-foreground">{implication}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <Button 
+                onClick={handleConfirm} 
+                disabled={isConfirming}
+                className="w-full"
+                size="lg"
+              >
+                {isConfirming ? "Confirming..." : "Confirm"}
+              </Button>
+            </Card>
+
+            {/* Responsible AI Reminder Card */}
+            <Card className="p-6 border-border bg-card">
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="w-5 h-5 text-primary" />
+                <h4 className="font-semibold">Responsible AI reminder</h4>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                When crafting AI prompts, prioritize clarity, specificity, and ethical considerations. 
+                Ensure your prompts respect privacy, avoid bias, and align with your organization's values 
+                and guidelines for responsible AI use.
+              </p>
+            </Card>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
