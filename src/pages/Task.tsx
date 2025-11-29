@@ -48,6 +48,12 @@ export default function Task() {
       return;
     }
 
+    // Redirect to CopilotTask if this is task 3
+    if (currentTask.order_index === 3) {
+      navigate(`/scenario/${scenarioId}/copilot`);
+      return;
+    }
+
     setTask(currentTask);
     setOptions(currentTask.options || []);
   };
