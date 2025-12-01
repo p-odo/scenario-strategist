@@ -50,35 +50,47 @@ export type Database = {
       copilot_submissions: {
         Row: {
           ai_score: number | null
+          context_score: number | null
           created_at: string
           enhanced_prompt: string | null
+          expectation_score: number | null
           feedback: string | null
+          goal_score: number | null
           group_id: string
           id: string
           prompt: string
           scenario_id: string
+          source_score: number | null
           user_rating: number | null
         }
         Insert: {
           ai_score?: number | null
+          context_score?: number | null
           created_at?: string
           enhanced_prompt?: string | null
+          expectation_score?: number | null
           feedback?: string | null
+          goal_score?: number | null
           group_id: string
           id?: string
           prompt: string
           scenario_id: string
+          source_score?: number | null
           user_rating?: number | null
         }
         Update: {
           ai_score?: number | null
+          context_score?: number | null
           created_at?: string
           enhanced_prompt?: string | null
+          expectation_score?: number | null
           feedback?: string | null
+          goal_score?: number | null
           group_id?: string
           id?: string
           prompt?: string
           scenario_id?: string
+          source_score?: number | null
           user_rating?: number | null
         }
         Relationships: [

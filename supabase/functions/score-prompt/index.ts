@@ -66,8 +66,12 @@ D. Expectation (Output Format & Quality)
 1 – Very Poor: No indication of output format or quality.
 
 Output Requirements:
-Return ONLY a valid JSON object with these three fields:
-- score: a sum of total score between 0 and 20
+Return ONLY a valid JSON object with these fields:
+- goal_score: the score for Goal (A) from 1-5
+- context_score: the score for Context (B) from 1-5
+- source_score: the score for Source (C) from 1-5
+- expectation_score: the score for Expectation (D) from 1-5
+- score: sum of all four scores (0-20)
 - feedback: a string explaining why the prompt is good or bad and how to improve it
 - enhanced_prompt: an improved version of the user's prompt that addresses the issues identified
 
@@ -120,7 +124,15 @@ ${prompt}`;
     content = content.trim().replace(/^```(?:json)?\n/, "").replace(/\n```$/, "");
 
     // Try to extract JSON
-    let parsed: { score?: number | string; feedback?: string; enhanced_prompt?: string } | null = null;
+    let parsed: { 
+      score?: number | string; 
+      goal_score?: number | string;
+      context_score?: number | string;
+      source_score?: number | string;
+      expectation_score?: number | string;
+      feedback?: string; 
+      enhanced_prompt?: string 
+    } | null = null;
     try {
       parsed = JSON.parse(content);
     } catch (e) {
@@ -138,6 +150,10 @@ ${prompt}`;
 
     // Fallbacks
     let score = 0;
+    let goal_score = 0;
+    let context_score = 0;
+    let source_score = 0;
+    let expectation_score = 0;
     let feedback = "";
     let enhanced_prompt = "";
 
@@ -150,6 +166,13 @@ ${prompt}`;
         const numMatch = content.match(/\d+(\.\d+)?/);
         score = numMatch ? parseFloat(numMatch[0]) : 0;
       }
+      
+      // Parse individual component scores
+      goal_score = typeof parsed.goal_score === "number" ? parsed.goal_score : parseFloat(String(parsed.goal_score)) || 0;
+      context_score = typeof parsed.context_score === "number" ? parsed.context_score : parseFloat(String(parsed.context_score)) || 0;
+      source_score = typeof parsed.source_score === "number" ? parsed.source_score : parseFloat(String(parsed.source_score)) || 0;
+      expectation_score = typeof parsed.expectation_score === "number" ? parsed.expectation_score : parseFloat(String(parsed.expectation_score)) || 0;
+      
       feedback = parsed.feedback ? String(parsed.feedback) : "";
       enhanced_prompt = parsed.enhanced_prompt ? String(parsed.enhanced_prompt) : prompt;
     } else {
@@ -159,10 +182,14 @@ ${prompt}`;
       enhanced_prompt = prompt;
     }
 
-    // Normalize to 0-20
+    // Normalize scores
     score = Math.max(0, Math.min(20, Number(score)));
+    goal_score = Math.max(0, Math.min(5, Number(goal_score)));
+    context_score = Math.max(0, Math.min(5, Number(context_score)));
+    source_score = Math.max(0, Math.min(5, Number(source_score)));
+    expectation_score = Math.max(0, Math.min(5, Number(expectation_score)));
 
-    console.log("Calculated score:", score);
+    console.log("Calculated scores:", { score, goal_score, context_score, source_score, expectation_score });
 
     // Store feedback in Supabase if configured
     if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
@@ -172,6 +199,10 @@ ${prompt}`;
           prompt,
           model_answer: modelAnswer,
           score,
+          goal_score,
+          context_score,
+          source_score,
+          expectation_score,
           feedback,
           created_at: new Date().toISOString(),
         };
@@ -189,7 +220,7 @@ ${prompt}`;
     }
 
     return new Response(
-      JSON.stringify({ score, feedback, enhanced_prompt }),
+      JSON.stringify({ score, goal_score, context_score, source_score, expectation_score, feedback, enhanced_prompt }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
