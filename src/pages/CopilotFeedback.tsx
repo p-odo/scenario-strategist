@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { Header } from "@/components/Header";
 import { useGroupStore } from "@/hooks/useGroupStore";
 import { supabase } from "@/integrations/supabase/client";
@@ -143,6 +144,44 @@ export default function CopilotFeedback() {
               </p>
             </Card>
           </div>
+
+          {/* Rubric Component Breakdown */}
+          <Card className="p-6 border-border bg-card/50 backdrop-blur-sm">
+            <h2 className="text-xl font-semibold mb-6">Rubric Component Breakdown</h2>
+            <div className="space-y-6">
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="font-medium">A. Goal (Clarity of Purpose)</span>
+                  <span className="text-primary font-semibold">{submission.goal_score || 0} / 5</span>
+                </div>
+                <Progress value={((submission.goal_score || 0) / 5) * 100} className="h-3" />
+              </div>
+
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="font-medium">B. Context (Background Information)</span>
+                  <span className="text-primary font-semibold">{submission.context_score || 0} / 5</span>
+                </div>
+                <Progress value={((submission.context_score || 0) / 5) * 100} className="h-3" />
+              </div>
+
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="font-medium">C. Source (Reference Material)</span>
+                  <span className="text-primary font-semibold">{submission.source_score || 0} / 5</span>
+                </div>
+                <Progress value={((submission.source_score || 0) / 5) * 100} className="h-3" />
+              </div>
+
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="font-medium">D. Expectation (Output Format & Quality)</span>
+                  <span className="text-primary font-semibold">{submission.expectation_score || 0} / 5</span>
+                </div>
+                <Progress value={((submission.expectation_score || 0) / 5) * 100} className="h-3" />
+              </div>
+            </div>
+          </Card>
 
           {/* Next Button */}
           <div className="flex justify-end">
