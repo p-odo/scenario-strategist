@@ -64,7 +64,7 @@ export default function CopilotFeedback() {
     if (score >= 14) return 4;
     if (score >= 10) return 3;
     if (score >= 6) return 2;
-    return 1;
+    if (score >= 1) return 1;
   };
 
   const getScoreLabel = (score: number): string => {
