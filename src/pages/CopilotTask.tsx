@@ -24,7 +24,37 @@ export default function CopilotTask() {
 
     setIsSubmitting(true);
 
-    const modelAnswer = "Create an Executive Compliance Report summarising all submitted filings. Include: Document names and categories, Filing destinations (regulatory portals), Status of each submission, Compliance check against required standards. Present in a structured table with a brief narrative overview.";
+    const modelAnswer = `You are an expert in aerospace procurement and risk analysis. Your task is to evaluate two vendor PowerPoint decks for life support systems and recommend which vendor should be prioritized for Cathay Space’s mission-critical operations.
+
+Perform the following steps:
+
+1. **Generate Critical Questions**  
+   Create a list of probing questions to ask each vendor in the upcoming meeting. Cover these areas:
+   - Compliance with international space safety standards
+   - Scalability for long-duration missions
+   - Risk mitigation strategies for system failures
+   - Contractual flexibility and penalties for non-compliance
+
+2. **Define Decision Criteria**  
+   Suggest a weighted set of decision criteria aligned with Cathay Space’s priorities:
+   - Safety and reliability
+   - Transparency and auditability
+   - Cost-effectiveness
+   - Expert oversight and maintainability
+
+3. **Evaluate Copilot Reliability**  
+   Before giving your recommendation:
+   - Provide citations for any claims or data used
+   - Walk through your reasoning step by step
+   - Highlight any assumptions or gaps in the provided decks
+
+4. **Vendor Probability Assessment**  
+   Based on the evidence in both decks:
+   - Assign a probability (as a percentage) that each vendor will meet Cathay Space’s safety and reliability standards for mission-critical operations
+   - Explain the logic behind these probabilities
+
+Finally, summarize your recommendation in a clear, actionable format (e.g., "Vendor A should be prioritized because...").
+`;
 
     const { data: submissionData, error: submissionError } = await supabase
       .from("copilot_submissions")
