@@ -197,7 +197,7 @@ export default function Task() {
                 {getIcon(option.icon)}
                 <div className="flex-1">
                   <h3 className="text-xl font-semibold mb-3">{option.title}</h3>
-                  <p className="text-muted-foreground mb-4">{option.description}</p>
+                  <p className="text-muted-foreground mb-4">{option.description.split('.')[0] + '.'}</p>
                 </div>
               </div>
 
