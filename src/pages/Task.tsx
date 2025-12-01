@@ -21,6 +21,7 @@ export default function Task() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [selectedOption, setSelectedOption] = useState<any>(null);
   const [cheatSheets, setCheatSheets] = useState<any[]>([]);
+  const [activeCheatSheetId, setActiveCheatSheetId] = useState<string | undefined>();
   const [isConfirming, setIsConfirming] = useState(false);
   const navigate = useNavigate();
 
@@ -79,6 +80,7 @@ export default function Task() {
     
     const sheets = optionCheatSheets?.map((ocs: any) => ocs.ai_cheat_sheets) || [];
     setCheatSheets(sheets);
+    setActiveCheatSheetId(sheets[0]?.id);
   };
 
   const handleConfirm = async () => {
@@ -116,6 +118,7 @@ export default function Task() {
   const handleCloseModal = () => {
     setSelectedOption(null);
     setCheatSheets([]);
+    setActiveCheatSheetId(undefined);
   };
 
   const getIcon = (iconName: string | null) => {
@@ -124,6 +127,11 @@ export default function Task() {
     return <Layers className="w-8 h-8 text-primary" />;
   };
 
+  useEffect(() => {
+    if (cheatSheets.length > 0) {
+      setActiveCheatSheetId((current) => current ?? cheatSheets[0].id);
+    }
+  }, [cheatSheets]);
   if (!task || !scenario) {
     return <div className="min-h-screen bg-background flex items-center justify-center">
       <p>Loading...</p>
@@ -271,7 +279,11 @@ export default function Task() {
             {cheatSheets.length > 0 && (
               <div className="space-y-3">
                 <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">AI Technology Guide</h4>
-                <Tabs key={selectedOption?.id} defaultValue={cheatSheets[0]?.id} className="w-full">
+                <Tabs
+                  value={activeCheatSheetId}
+                  onValueChange={setActiveCheatSheetId}
+                  className="w-full"
+                >
                   <TabsList className="grid w-full bg-muted" style={{ gridTemplateColumns: `repeat(${cheatSheets.length}, minmax(0, 1fr))` }}>
                     {cheatSheets.map((sheet: any) => (
                       <TabsTrigger key={sheet.id} value={sheet.id} className="text-xs">
