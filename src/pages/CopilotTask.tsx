@@ -83,7 +83,11 @@ Finally, summarize your recommendation in a clear, actionable format (e.g., "Ven
           .update({ 
             ai_score: response.data.score,
             feedback: response.data.feedback || null,
-            enhanced_prompt: response.data.enhanced_prompt || null
+            enhanced_prompt: response.data.enhanced_prompt || null,
+            goal_score: response.data.goal_score || null,
+            context_score: response.data.context_score || null,
+            source_score: response.data.source_score || null,
+            expectation_score: response.data.expectation_score || null
           })
           .eq("id", submissionData.id);
       }
