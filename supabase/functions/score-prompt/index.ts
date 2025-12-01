@@ -24,70 +24,50 @@ serve(async (req) => {
     console.log("Scoring prompt:", (prompt || "").substring(0, 500) + "...");
 
     // Ask the model to return a JSON object with score, feedback, and enhanced prompt
-    const systemContent = `You are an expert prompt evaluator. Evaluate how well the user's prompt aligns with the following rubric. Also can take reference to the provided model answer. Consider:
-A. Goal: Did User clearly state what they want Copilot to do
-B. Context: Did User provide relevant background (audience, domain, constraints)?
-C. Source: Did User include references, examples, or data Copilot should use?
-D. Expectation: Did User specify output format, tone, length, and quality?
+    const systemContent = `You are an expert prompt evaluator. Your task is to assess how well the user's prompt aligns with the following rubric and optionally reference the provided model answer.
 
-Scoring: Rate each criteria A, B, C, D from 1–5.
+Evaluation Criteria:
+A. Goal: Did the user clearly state what they want Copilot to do?
+B. Context: Did the user provide relevant background (audience, domain, constraints)?
+C. Source: Did the user include references, examples, or data Copilot should use?
+D. Expectation: Did the user specify output format, tone, length, and quality?
 
-A. Goal (Clarity of Purpose)​
+Scoring Instructions:
+- Rate each criterion (A, B, C, D) from 1 to 5 using the detailed descriptions below.
+- Sum the four scores to produce a total score between 0 and 20.
 
-5 – Excellent: Clearly states desired outcome with no ambiguity.​
+Detailed Rubric:
+A. Goal (Clarity of Purpose)
+5 – Excellent: Clearly states desired outcome with no ambiguity.
+4 – Good: Mostly clear goal; minor clarifications needed.
+3 – Fair: Somewhat clear; leaves room for interpretation.
+2 – Poor: Vague or partially missing goal.
+1 – Very Poor: No clear goal; Copilot must guess user intent.
 
-4 – Good: Mostly clear goal; minor clarifications needed.​
+B. Context (Relevant Background Information)
+5 – Excellent: All necessary background details provided (audience, domain, constraints).
+4 – Good: Most relevant context included; minor details missing.
+3 – Fair: Some context, but key details missing.
+2 – Poor: Minimal context; important information lacking.
+1 – Very Poor: No context; prompt isolated and unclear.
 
-3 – Fair: Somewhat clear; leaves room for interpretation.​
+C. Source (Reference Material or Data)
+5 – Excellent: Accurate sources, examples, or data included.
+4 – Good: Some source material provided, but not comprehensive.
+3 – Fair: Vague mention of sources without specifics.
+2 – Poor: Sources suggested but not provided.
+1 – Very Poor: No sources or references; relies on assumptions.
 
-2 – Poor: Vague or partially missing goal.​
-
-1 – Very Poor: No clear goal; Copilot must guess user intent.​
-
-
-B. Context (Relevant Background Information)​
-
-5 – Excellent: All necessary background details provided (audience, domain, constraints).​
-
-4 – Good: Most relevant context included; minor details missing.​
-
-3 – Fair: Some context, but key details missing.​
-
-2 – Poor: Minimal context; important information lacking.​
-
-1 – Very Poor: No context; prompt isolated and unclear.​
-
-
-​C.Source (Reference Material or Data)​
-
-5 – Excellent: Accurate sources, examples, or data included.​
-
-4 – Good: Some source material provided, but not comprehensive.​
-
-3 – Fair: Vague mention of sources without specifics.​
-
-2 – Poor: Sources suggested but not provided.​
-
-1 – Very Poor: No sources or references; relies on assumptions.​
-
-​
-
-D. Expectation (Output Format & Quality)​
-
-5 – Excellent: Clearly specifies output type, tone, length, and quality standards.​
-
-4 – Good: Indicates output format but lacks minor details.​
-
-3 – Fair: General idea of output given, some ambiguity remains.​
-
-2 – Poor: Minimal guidance on output expectations.​
-
+D. Expectation (Output Format & Quality)
+5 – Excellent: Clearly specifies output type, tone, length, and quality standards.
+4 – Good: Indicates output format but lacks minor details.
+3 – Fair: General idea of output given, some ambiguity remains.
+2 – Poor: Minimal guidance on output expectations.
 1 – Very Poor: No indication of output format or quality.
-​
 
-​
-Return ONLY a JSON object with three fields:
-- score: a sum of total score of the 4 Criterias in a number between 0 and 20
+Output Requirements:
+Return ONLY a valid JSON object with these three fields:
+- score: a sum of total score between 0 and 20
 - feedback: a string explaining why the prompt is good or bad and how to improve it
 - enhanced_prompt: an improved version of the user's prompt that addresses the issues identified
 
@@ -179,8 +159,8 @@ ${prompt}`;
       enhanced_prompt = prompt;
     }
 
-    // Normalize to 0-5
-    score = Math.max(0, Math.min(5, Number(score)));
+    // Normalize to 0-20
+    score = Math.max(0, Math.min(20, Number(score)));
 
     console.log("Calculated score:", score);
 
