@@ -59,14 +59,30 @@ export default function CopilotFeedback() {
     );
   }
 
-  const renderStars = (score: number) => {
+  const getStarsFromScore = (score: number): number => {
+    if (score >= 18) return 5;
+    if (score >= 14) return 4;
+    if (score >= 10) return 3;
+    if (score >= 6) return 2;
+    return 1;
+  };
+
+  const getScoreLabel = (score: number): string => {
+    if (score >= 18) return "Excellent prompt – High-quality results expected";
+    if (score >= 14) return "Good prompt – Minor improvements needed";
+    if (score >= 10) return "Fair prompt – Clarifications required";
+    if (score >= 6) return "Poor prompt – Copilot will struggle";
+    return "Very poor prompt – Rewrite needed";
+  };
+
+  const renderStars = (stars: number) => {
     return (
       <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
             className={`w-8 h-8 ${
-              star <= score
+              star <= stars
                 ? "fill-yellow-400 text-yellow-400"
                 : "text-muted-foreground"
             }`}
@@ -109,9 +125,12 @@ export default function CopilotFeedback() {
             <Card className="p-6 border-border bg-card/50 backdrop-blur-sm">
               <h2 className="text-xl font-semibold mb-4">AI Score</h2>
               <div className="flex flex-col items-center gap-4">
-                {renderStars(Math.round(submission.ai_score || 0))}
+                {renderStars(getStarsFromScore(submission.ai_score || 0))}
                 <p className="text-4xl font-bold text-primary">
-                  {submission.ai_score?.toFixed(1) || "0.0"} / 5.0
+                  {submission.ai_score?.toFixed(0) || "0"} / 20
+                </p>
+                <p className="text-sm text-muted-foreground text-center">
+                  {getScoreLabel(submission.ai_score || 0)}
                 </p>
               </div>
             </Card>
