@@ -30,7 +30,7 @@ B. Context: Did User provide relevant background (audience, domain, constraints)
 C. Source: Did User include references, examples, or data Copilot should use?
 D. Expectation: Did User specify output format, tone, length, and quality?
 
-Scoring: Rate each from 1–5 and sum for total score.
+Scoring: Rate each criteria A, B, C, D from 1–5.
 
 A. Goal (Clarity of Purpose)​
 
@@ -87,7 +87,7 @@ D. Expectation (Output Format & Quality)​
 
 ​
 Return ONLY a JSON object with three fields:
-- score: a number between 0 and 20
+- score: a sum of total score of the 4 Criterias in a number between 0 and 20
 - feedback: a string explaining why the prompt is good or bad and how to improve it
 - enhanced_prompt: an improved version of the user's prompt that addresses the issues identified
 
