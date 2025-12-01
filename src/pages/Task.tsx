@@ -271,7 +271,7 @@ export default function Task() {
             {cheatSheets.length > 0 && (
               <div className="space-y-3">
                 <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">AI Technology Guide</h4>
-                <Tabs defaultValue={cheatSheets[0]?.id} className="w-full">
+                <Tabs key={selectedOption?.id} defaultValue={cheatSheets[0]?.id} className="w-full">
                   <TabsList className="grid w-full bg-muted" style={{ gridTemplateColumns: `repeat(${cheatSheets.length}, minmax(0, 1fr))` }}>
                     {cheatSheets.map((sheet: any) => (
                       <TabsTrigger key={sheet.id} value={sheet.id} className="text-xs">
