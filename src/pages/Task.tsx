@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AICheatSheet } from "@/components/AICheatSheet";
+import ReactMarkdown from 'react-markdown'
 
 export default function Task() {
   const { scenarioId, taskNumber } = useParams();
@@ -188,7 +189,7 @@ export default function Task() {
                 {scenario.name}
               </h1>
               <h2 className="text-3xl font-bold text-primary mb-3">{task.title}</h2>
-              <p className="text-lg text-muted-foreground max-w-4xl">{task.description}</p>
+              <ReactMarkdown className="prose text-lg text-muted-foreground max-w-4xl">{task.description}</ReactMarkdown>
             </div>
           </div>
         </div>
@@ -205,7 +206,7 @@ export default function Task() {
                 {getIcon(option.icon)}
                 <div className="flex-1">
                   <h3 className="text-xl font-semibold mb-3">{option.title}</h3>
-                  <p className="text-muted-foreground mb-4">{option.description.split('.')[0] + '.'}</p>
+                  <ReactMarkdown className="text-muted-foreground mb-4">{option.description.split('.')[0] + '.'}</ReactMarkdown>
                 </div>
               </div>
 
@@ -247,7 +248,7 @@ export default function Task() {
                 {selectedOption && getIcon(selectedOption.icon)}
                 <div className="flex-1">
                   <h3 className="text-2xl font-bold mb-2">{selectedOption?.title}</h3>
-                  <p className="text-muted-foreground">{selectedOption?.description}</p>
+                  <ReactMarkdown className="text-muted-foreground">{selectedOption?.description}</ReactMarkdown>
                 </div>
               </div>
 
