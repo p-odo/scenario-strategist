@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_cheat_sheets: {
+        Row: {
+          created_at: string
+          example_use_cases: string[]
+          header_color: string
+          icon: string
+          id: string
+          name: string
+          prerequisites: string
+          what_is: string
+        }
+        Insert: {
+          created_at?: string
+          example_use_cases: string[]
+          header_color?: string
+          icon: string
+          id?: string
+          name: string
+          prerequisites: string
+          what_is: string
+        }
+        Update: {
+          created_at?: string
+          example_use_cases?: string[]
+          header_color?: string
+          icon?: string
+          id?: string
+          name?: string
+          prerequisites?: string
+          what_is?: string
+        }
+        Relationships: []
+      }
       copilot_submissions: {
         Row: {
           ai_score: number | null
@@ -176,6 +209,42 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      option_cheat_sheets: {
+        Row: {
+          cheat_sheet_id: string
+          created_at: string
+          id: string
+          option_id: string
+        }
+        Insert: {
+          cheat_sheet_id: string
+          created_at?: string
+          id?: string
+          option_id: string
+        }
+        Update: {
+          cheat_sheet_id?: string
+          created_at?: string
+          id?: string
+          option_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "option_cheat_sheets_cheat_sheet_id_fkey"
+            columns: ["cheat_sheet_id"]
+            isOneToOne: false
+            referencedRelation: "ai_cheat_sheets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "option_cheat_sheets_option_id_fkey"
+            columns: ["option_id"]
+            isOneToOne: false
+            referencedRelation: "options"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       options: {
         Row: {

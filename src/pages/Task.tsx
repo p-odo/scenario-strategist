@@ -5,10 +5,11 @@ import { Header } from "@/components/Header";
 import { useGroupStore } from "@/hooks/useGroupStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Search, Layers, DollarSign, Star, Clock, Sparkles } from "lucide-react";
+import { Search, Layers, DollarSign, Star, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { AICheatSheet } from "@/components/AICheatSheet";
 
 export default function Task() {
   const { scenarioId, taskNumber } = useParams();
@@ -18,6 +19,7 @@ export default function Task() {
   const [options, setOptions] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
   const [selectedOption, setSelectedOption] = useState<any>(null);
+  const [cheatSheets, setCheatSheets] = useState<any[]>([]);
   const [isConfirming, setIsConfirming] = useState(false);
   const navigate = useNavigate();
 
@@ -62,8 +64,20 @@ export default function Task() {
     setOptions(currentTask.options || []);
   };
 
-  const handleOptionSelect = (option: any) => {
+  const handleOptionSelect = async (option: any) => {
     setSelectedOption(option);
+    
+    // Fetch cheat sheets for this option
+    const { data: optionCheatSheets } = await supabase
+      .from("option_cheat_sheets")
+      .select(`
+        cheat_sheet_id,
+        ai_cheat_sheets (*)
+      `)
+      .eq("option_id", option.id);
+    
+    const sheets = optionCheatSheets?.map((ocs: any) => ocs.ai_cheat_sheets) || [];
+    setCheatSheets(sheets);
   };
 
   const handleConfirm = async () => {
@@ -100,6 +114,7 @@ export default function Task() {
 
   const handleCloseModal = () => {
     setSelectedOption(null);
+    setCheatSheets([]);
   };
 
   const getIcon = (iconName: string | null) => {
@@ -211,7 +226,7 @@ export default function Task() {
       </div>
 
       <Dialog open={!!selectedOption} onOpenChange={(open) => !open && handleCloseModal()}>
-        <DialogContent className="max-w-5xl p-0 gap-0 bg-background/95 backdrop-blur-sm border-border">
+        <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto p-0 gap-0 bg-background/95 backdrop-blur-sm border-border">
           <DialogHeader className="p-6 pb-4 border-b border-border">
             <DialogTitle className="text-2xl font-bold">CONFIRM YOUR SELECTION?</DialogTitle>
           </DialogHeader>
@@ -251,18 +266,22 @@ export default function Task() {
               </Button>
             </Card>
 
-            {/* Responsible AI Reminder Card */}
-            <Card className="p-6 border-border bg-card">
-              <div className="flex items-center gap-2 mb-4">
-                <Sparkles className="w-5 h-5 text-primary" />
-                <h4 className="font-semibold">Responsible AI reminder</h4>
+            {/* AI Cheat Sheets */}
+            {cheatSheets.length > 0 && (
+              <div className="space-y-4">
+                {cheatSheets.map((sheet: any) => (
+                  <AICheatSheet
+                    key={sheet.id}
+                    name={sheet.name}
+                    icon={sheet.icon}
+                    headerColor={sheet.header_color}
+                    whatIs={sheet.what_is}
+                    prerequisites={sheet.prerequisites}
+                    exampleUseCases={sheet.example_use_cases}
+                  />
+                ))}
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                When crafting AI prompts, prioritize clarity, specificity, and ethical considerations. 
-                Ensure your prompts respect privacy, avoid bias, and align with your organization's values 
-                and guidelines for responsible AI use.
-              </p>
-            </Card>
+            )}
           </div>
         </DialogContent>
       </Dialog>
