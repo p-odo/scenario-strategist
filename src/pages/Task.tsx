@@ -9,6 +9,7 @@ import { Search, Layers, DollarSign, Star, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AICheatSheet } from "@/components/AICheatSheet";
 
 export default function Task() {
@@ -268,18 +269,29 @@ export default function Task() {
 
             {/* AI Cheat Sheets */}
             {cheatSheets.length > 0 && (
-              <div className="space-y-4">
-                {cheatSheets.map((sheet: any) => (
-                  <AICheatSheet
-                    key={sheet.id}
-                    name={sheet.name}
-                    icon={sheet.icon}
-                    headerColor={sheet.header_color}
-                    whatIs={sheet.what_is}
-                    prerequisites={sheet.prerequisites}
-                    exampleUseCases={sheet.example_use_cases}
-                  />
-                ))}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">AI Technology Guide</h4>
+                <Tabs defaultValue={cheatSheets[0]?.id} className="w-full">
+                  <TabsList className="grid w-full bg-muted" style={{ gridTemplateColumns: `repeat(${cheatSheets.length}, minmax(0, 1fr))` }}>
+                    {cheatSheets.map((sheet: any) => (
+                      <TabsTrigger key={sheet.id} value={sheet.id} className="text-xs">
+                        {sheet.name}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  {cheatSheets.map((sheet: any) => (
+                    <TabsContent key={sheet.id} value={sheet.id} className="mt-3">
+                      <AICheatSheet
+                        name={sheet.name}
+                        icon={sheet.icon}
+                        headerColor={sheet.header_color}
+                        whatIs={sheet.what_is}
+                        prerequisites={sheet.prerequisites}
+                        exampleUseCases={sheet.example_use_cases}
+                      />
+                    </TabsContent>
+                  ))}
+                </Tabs>
               </div>
             )}
           </div>
