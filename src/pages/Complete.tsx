@@ -252,7 +252,7 @@ export default function Complete() {
               <div className="text-center max-w-xl mx-auto">
                 <div className="flex items-center justify-center gap-2 mb-4 text-muted-foreground">
                   {/* Increased label size */}
-                  <span className="text-base font-bold uppercase tracking-widest">AI Prompt Score</span>
+                  <span className="text-base font-bold uppercase tracking-widest">Copilot Prompt Score</span>
                 </div>
                 
                 <div className="flex flex-col items-center justify-center">
