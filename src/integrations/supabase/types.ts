@@ -222,6 +222,42 @@ export type Database = {
         }
         Relationships: []
       }
+      option_ai_consideration: {
+        Row: {
+          created_at: string
+          id: string
+          option_id: string | null
+          reminder_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          option_id?: string | null
+          reminder_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          option_id?: string | null
+          reminder_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "option_ai_consideration_option_id_fkey"
+            columns: ["option_id"]
+            isOneToOne: false
+            referencedRelation: "options"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "option_ai_consideration_reminder_id_fkey"
+            columns: ["reminder_id"]
+            isOneToOne: false
+            referencedRelation: "responsible_ai_consideration"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       option_cheat_sheets: {
         Row: {
           cheat_sheet_id: string
@@ -329,6 +365,24 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           id?: string
+        }
+        Relationships: []
+      }
+      responsible_ai_consideration: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
         }
         Relationships: []
       }
