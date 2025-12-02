@@ -71,16 +71,8 @@ export default function Task() {
       return;
     }
 
-    // --- NAVIGATION LOGIC FOR COPILOT ---
-    // If we are on Task 3, redirect to the appropriate Copilot Page
     if (currentTask.order_index === 3) {
-      // CHECK: Is this Scenario 2? (Checking order_index or name)
-      if (scenarioResult.data.order_index === 2 || scenarioResult.data.name.includes("Scenario 2")) {
-         navigate(`/scenario/${scenarioId}/copilot-s2`, { state: { tasks: allTasks } });
-      } else {
-         // Default to Scenario 1 Copilot
-         navigate(`/scenario/${scenarioId}/copilot`, { state: { tasks: allTasks } });
-      }
+      navigate(`/scenario/${scenarioId}/copilot`);
       return;
     }
 
@@ -93,23 +85,29 @@ export default function Task() {
         const optionIds = currentOptions.map((o: any) => o.id);
         
         try {
+          // 1. Get all Links for these options
+          // Use 'as any' to avoid TS errors for new table
           const { data: links } = await supabase
             .from("option_ai_consideration" as any)
             .select("option_id, reminder_id")
             .in("option_id", optionIds);
   
+          // Explicitly cast to any[] to avoid "SelectQueryError" issues
           const safeLinks = links as any[] | null;
 
           if (safeLinks && safeLinks.length > 0) {
             const reminderIds = safeLinks.map((l: any) => l.reminder_id);
             
+            // 2. Get all Messages
             const { data: messages } = await supabase
               .from("responsible_ai_consideration" as any)
               .select("id, message")
               .in("id", reminderIds);
               
+            // FIX APPLIED HERE: Cast messages to any[] so we can access .message property
             const safeMessages = messages as any[] | null;
 
+            // 3. Create a lookup map { optionId: "Message..." }
             const map: Record<string, string> = {};
             safeLinks.forEach((link: any) => {
               const match = safeMessages?.find((m: any) => m.id === link.reminder_id);
@@ -173,7 +171,7 @@ export default function Task() {
       
       const nextTaskNumber = parseInt(taskNumber!) + 1;
       if (nextTaskNumber <= tasks.length) {
-        navigate(`/scenario/${scenarioId}/task/${nextTaskNumber}`, { state: { tasks } });
+        navigate(`/scenario/${scenarioId}/task/${nextTaskNumber}`);
       } else {
         navigate(`/scenario/${scenarioId}/complete`);
       }
@@ -226,7 +224,7 @@ export default function Task() {
                   className={`flex items-center gap-2 ${index <= currentTaskIndex ? "" : "opacity-40"} ${index < currentTaskIndex ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}`}
                   onClick={() => {
                     if (index < currentTaskIndex) {
-                      navigate(`/scenario/${scenarioId}/task/${index + 1}`, { state: { tasks } });
+                      navigate(`/scenario/${scenarioId}/task/${index + 1}`);
                     }
                   }}
                 >
