@@ -91,7 +91,7 @@ Perform the following steps:
 
 Finally, summarize your recommendation in a clear, actionable format (e.g., "Vendor A should be prioritized because...").
 `;
-
+const Question = 'You have received two vendor PowerPoint decks for life support systems. Each deck contains extensive information—technical specifications, pricing models, compliance claims, etc. You need to determine which vendor offers the best solution for mission-critical operations.`;
     const { data: submissionData, error: submissionError } = await supabase
       .from("copilot_submissions")
       .insert({
@@ -110,7 +110,7 @@ Finally, summarize your recommendation in a clear, actionable format (e.g., "Ven
 
     try {
       const response = await supabase.functions.invoke("score-prompt", {
-        body: { prompt, modelAnswer },
+        body: { prompt, modelAnswer, Question},
       });
 
       if (response.data?.score !== undefined) {
