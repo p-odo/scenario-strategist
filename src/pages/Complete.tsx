@@ -251,7 +251,6 @@ export default function Complete() {
             <div className="mt-12 pt-12 border-t border-border/40">
               <div className="text-center max-w-xl mx-auto">
                 <div className="flex items-center justify-center gap-2 mb-4 text-muted-foreground">
-                  <Sparkles className="w-6 h-6 text-purple-400" />
                   {/* Increased label size */}
                   <span className="text-base font-bold uppercase tracking-widest">AI Prompt Score</span>
                 </div>
