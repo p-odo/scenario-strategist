@@ -49,7 +49,7 @@ export default function CopilotFeedback() {
   };
 
   const handleNext = () => {
-    navigate(`/scenario/${scenarioId}/copilot/enhanced`);
+    navigate(`/scenario/${scenarioId}/complete`);
   };
 
   if (!submission) {
