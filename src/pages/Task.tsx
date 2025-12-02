@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { AICheatSheet } from "@/components/AICheatSheet";
+import { MultipleChoiceTask } from "@/components/MultipleChoiceTask";
 import ReactMarkdown from 'react-markdown';
 
 export default function Task() {
@@ -183,6 +184,38 @@ export default function Task() {
     }
   };
 
+  const handleMultipleChoiceConfirm = async (selectedOptions: string[]) => {
+    if (!groupId || !task || selectedOptions.length === 0) return;
+    
+    setIsConfirming(true);
+    try {
+      // Save the primary choice (first ranked option)
+      const { error } = await supabase
+        .from("group_choices")
+        .insert({
+          group_id: groupId,
+          task_id: task.id,
+          option_id: selectedOptions[0],
+        });
+
+      if (error) throw error;
+
+      toast.success("Rankings saved!");
+      
+      const nextTaskNumber = parseInt(taskNumber!) + 1;
+      if (nextTaskNumber <= tasks.length) {
+        navigate(`/scenario/${scenarioId}/task/${nextTaskNumber}`);
+      } else {
+        navigate(`/scenario/${scenarioId}/complete`);
+      }
+    } catch (error) {
+      console.error("Error saving rankings:", error);
+      toast.error("Failed to save rankings");
+    } finally {
+      setIsConfirming(false);
+    }
+  };
+
   const handleCloseModal = () => {
     setSelectedOption(null);
     setCheatSheets([]);
@@ -261,50 +294,61 @@ export default function Task() {
           </div>
         </div>
 
-        {/* Option Selection Grid */}
-        <h3 className="text-xl font-semibold mb-6">YOU HAVE TWO CHOICES:</h3>
-        <div className="grid md:grid-cols-2 gap-6 max-w-6xl">
-          {options.map((option) => (
-            <Card
-              key={option.id}
-              className="p-6 cursor-pointer hover:border-primary transition-colors border-border bg-card/50 backdrop-blur-sm group flex flex-col h-full"
-              onClick={() => handleOptionSelect(option)}
-            >
-              <div className="flex-1 mb-4">
-                <div className="flex items-start gap-4 mb-4">
-                  {getIcon(option.icon)}
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold mb-3">{option.title}</h3>
-                    <div className="text-muted-foreground">
-                      <ReactMarkdown>{(option.description || '').split('.')[0] + '.'}</ReactMarkdown>
+        {/* Task 2: Multiple Choice / Ranking Interface */}
+        {parseInt(taskNumber!) === 2 ? (
+          <MultipleChoiceTask 
+            options={options}
+            onConfirm={handleMultipleChoiceConfirm}
+            isConfirming={isConfirming}
+          />
+        ) : (
+          <>
+            {/* Option Selection Grid */}
+            <h3 className="text-xl font-semibold mb-6">YOU HAVE TWO CHOICES:</h3>
+            <div className="grid md:grid-cols-2 gap-6 max-w-6xl">
+              {options.map((option) => (
+                <Card
+                  key={option.id}
+                  className="p-6 cursor-pointer hover:border-primary transition-colors border-border bg-card/50 backdrop-blur-sm group flex flex-col h-full"
+                  onClick={() => handleOptionSelect(option)}
+                >
+                  <div className="flex-1 mb-4">
+                    <div className="flex items-start gap-4 mb-4">
+                      {getIcon(option.icon)}
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold mb-3">{option.title}</h3>
+                        <div className="text-muted-foreground">
+                          <ReactMarkdown>{(option.description || '').split('.')[0] + '.'}</ReactMarkdown>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="flex flex-wrap gap-2 mt-auto">
-                {option.cost_label && (
-                  <Badge variant="secondary" className="px-2.5 py-0.5 text-xs gap-1.5 font-medium">
-                    <DollarSign className="w-3 h-3" />
-                    {option.cost_label}
-                  </Badge>
-                )}
-                {option.impact_label && (
-                  <Badge variant="secondary" className="px-2.5 py-0.5 text-xs gap-1.5 font-medium">
-                    <Star className="w-3 h-3" />
-                    {option.impact_label}
-                  </Badge>
-                )}
-                {option.speed_label && (
-                  <Badge variant="secondary" className="px-2.5 py-0.5 text-xs gap-1.5 font-medium">
-                    <Clock className="w-3 h-3" />
-                    {option.speed_label}
-                  </Badge>
-                )}
-              </div>
-            </Card>
-          ))}
-        </div>
+                  <div className="flex flex-wrap gap-2 mt-auto">
+                    {option.cost_label && (
+                      <Badge variant="secondary" className="px-2.5 py-0.5 text-xs gap-1.5 font-medium">
+                        <DollarSign className="w-3 h-3" />
+                        {option.cost_label}
+                      </Badge>
+                    )}
+                    {option.impact_label && (
+                      <Badge variant="secondary" className="px-2.5 py-0.5 text-xs gap-1.5 font-medium">
+                        <Star className="w-3 h-3" />
+                        {option.impact_label}
+                      </Badge>
+                    )}
+                    {option.speed_label && (
+                      <Badge variant="secondary" className="px-2.5 py-0.5 text-xs gap-1.5 font-medium">
+                        <Clock className="w-3 h-3" />
+                        {option.speed_label}
+                      </Badge>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Confirmation Modal */}
