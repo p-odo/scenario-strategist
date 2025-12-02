@@ -12,7 +12,8 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, modelAnswer } = await req.json();
+    // 1. Get 'question' from the request body
+    const { prompt, modelAnswer, question } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -23,12 +24,12 @@ serve(async (req) => {
 
     console.log("Scoring prompt:", (prompt || "").substring(0, 500) + "...");
 
-    // Ask the model to return a JSON object with score, feedback, enhanced prompt, and individual scores
-    const systemContent = `You are an expert prompt evaluator. Your task is to assess how well the user's prompt aligns with the following rubric and optionally reference the provided model answer.
+    // 2. Update System Prompt to mention the Question
+    const systemContent = `You are an expert prompt evaluator. Your task is to assess how well the user's prompt addresses the specific Question provided and aligns with the following rubric. You may optionally reference the provided model answer.
 
 Evaluation Criteria:
-A. Goal: Did the user clearly state what they want Copilot to do?
-B. Context: Did the user provide relevant background (audience, domain, constraints)?
+A. Goal: Did the user clearly state what they want Copilot to do to solve the Question?
+B. Context: Did the user provide relevant background (audience, domain, constraints) related to the Question?
 C. Source: Did the user include references, examples, or data Copilot should use?
 D. Expectation: Did the user specify output format, tone, length, and quality?
 
@@ -38,7 +39,7 @@ Scoring Instructions:
 
 Detailed Rubric:
 A. Goal (Clarity of Purpose)
-5 – Excellent: Clearly states desired outcome with no ambiguity.
+5 – Excellent: Clearly states desired outcome with no ambiguity regarding the specific Question.
 4 – Good: Mostly clear goal; minor clarifications needed.
 3 – Fair: Somewhat clear; leaves room for interpretation.
 2 – Poor: Vague or partially missing goal.
@@ -77,11 +78,16 @@ Return ONLY a valid JSON object with these fields:
 
 Do not include additional text.`;
 
-    const userContent = `Model Answer:
+    // 3. Update User Content to include the Question
+    const userContent = `Original Question/Task:
+${question}
+
+Model Answer (Reference):
 ${modelAnswer}
 
-Evaluate this prompt and return the JSON object described above for the following prompt:
+Evaluate this prompt based on how well it addresses the Original Question above and return the JSON object described in the instructions:
 
+User Prompt:
 ${prompt}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -191,6 +197,7 @@ ${prompt}`;
         const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
         const insertPayload = {
           prompt,
+          question, // 4. Added 'question' to the database insert
           model_answer: modelAnswer,
           score,
           goal_score,
