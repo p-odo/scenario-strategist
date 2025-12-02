@@ -22,7 +22,7 @@ export default function Complete() {
   const [costScore, setCostScore] = useState<number>(0);
   const [maxScore, setMaxScore] = useState<number>(0);
 
-  // NEW: AI Score
+  // AI Score
   const [aiScore, setAiScore] = useState<number | null>(null);
 
   const navigate = useNavigate();
@@ -51,7 +51,7 @@ export default function Complete() {
       }
       setScenario(scenarioResult.data);
 
-      // 2. Load Tasks (to verify completion)
+      // 2. Load Tasks
       const tasksResult = await supabase
         .from("tasks")
         .select("id")
@@ -59,20 +59,20 @@ export default function Complete() {
 
       const taskIds = tasksResult.data?.map((t) => t.id) || [];
 
-      // 3. Load Group Choices (For Scenario Score)
+      // 3. Load Group Choices
       const choicesResult = await supabase
         .from("group_choices")
         .select("id, task_id, option_id, created_at")
         .eq("group_id", groupId)
         .in("task_id", taskIds);
 
-      // 4. Load AI Submission (For AI Score) -- NEW
+      // 4. Load AI Submission
       const submissionResult = await supabase
         .from("copilot_submissions")
         .select("ai_score")
         .eq("group_id", groupId)
         .eq("scenario_id", scenarioId)
-        .order("created_at", { ascending: false }) // Get latest
+        .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
       
@@ -80,9 +80,8 @@ export default function Complete() {
         setAiScore(submissionResult.data.ai_score);
       }
 
-      // --- Calculate Scenario Score Logic ---
+      // Calculate Scenario Score
       if (choicesResult.data && choicesResult.data.length > 0) {
-        // Keep only latest choice per task
         const latestChoiceByTask: Record<string, any> = {};
         choicesResult.data.forEach((choice) => {
           const existing = latestChoiceByTask[choice.task_id];
@@ -92,7 +91,6 @@ export default function Complete() {
         });
         const uniqueChoices = Object.values(latestChoiceByTask);
 
-        // Get options to calculate weighted score
         const optionIds = uniqueChoices.map((c) => c.option_id);
         const optionsResult = await supabase.from("options").select("*").in("id", optionIds);
 
@@ -123,7 +121,6 @@ export default function Complete() {
         setMaxScore(maxPossible);
       }
 
-      // Mark as completed
       await supabase
         .from("group_progress")
         .update({ completed_at: new Date().toISOString() })
@@ -138,16 +135,12 @@ export default function Complete() {
 
   const handleComplete = async () => {
     try {
-      // Logic to reset session (delete choices, reset progress)
       const tasksResult = await supabase.from("tasks").select("id").eq("scenario_id", scenarioId);
       const taskIds = tasksResult.data?.map((t) => t.id) || [];
 
       if (taskIds.length > 0) {
         await supabase.from("group_choices").delete().eq("group_id", groupId).in("task_id", taskIds);
       }
-      
-      // Also reset Copilot submissions if you want a clean slate? 
-      // await supabase.from("copilot_submissions").delete().eq("group_id", groupId).eq("scenario_id", scenarioId);
 
       await supabase
         .from("group_progress")
@@ -163,7 +156,6 @@ export default function Complete() {
     }
   };
 
-  // --- Helpers for AI Score Display ---
   const getStarsFromScore = (score: number): number => {
     if (score >= 18) return 5;
     if (score >= 14) return 4;
@@ -216,76 +208,76 @@ export default function Complete() {
 
       <div className="container mx-auto px-6 py-12">
         
-        {/* Main Card Container */}
-        <Card className="max-w-5xl mx-auto p-8 border-success/20 bg-card/50 backdrop-blur-sm">
+        {/* Main Card Container - Using max-w-4xl for a nice wide centered look */}
+        <Card className="max-w-4xl mx-auto p-10 border-success/20 bg-card/50 backdrop-blur-sm">
           
-          <h2 className="text-2xl font-semibold mb-8 text-center">
+          <h2 className="text-3xl font-semibold mb-10 text-center">
             You have completed this scenario!
           </h2>
 
-          {/* TWO COLUMN LAYOUT: Scenario Score (Left) | AI Score (Right) */}
-          <div className="grid md:grid-cols-2 gap-8 mb-8">
+          {/* --- SECTION 1: STRATEGIC SCORE (Main Hero) --- */}
+          <div className="text-center mb-10">
+            <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-3">Strategic Score</p>
+            <p className="text-7xl font-bold text-primary mb-8">{score?.toFixed(1) || "0.0"}</p>
             
-            {/* Left: Strategic Performance (Existing) */}
-            <div className="p-6 rounded-xl bg-card border border-border/50">
-              <div className="text-center mb-6">
-                <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">Strategic Score</p>
-                <p className="text-5xl font-bold text-primary">{score?.toFixed(1) || "0.0"}</p>
+            {/* Progress Bars - Centered and limited width */}
+            <div className="max-w-xl mx-auto space-y-6">
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium">Business Impact</span>
+                  <span className="text-xs text-muted-foreground">{businessScore.toFixed(1)} / {maxScore}</span>
+                </div>
+                <Progress value={maxScore ? (businessScore / maxScore) * 100 : 0} className="h-2.5" />
               </div>
-
-              <div className="space-y-5">
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm font-medium">Business Impact</span>
-                    <span className="text-xs text-muted-foreground">{businessScore.toFixed(1)} / {maxScore}</span>
-                  </div>
-                  <Progress value={maxScore ? (businessScore / maxScore) * 100 : 0} className="h-2" />
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium">Time Efficiency</span>
+                  <span className="text-xs text-muted-foreground">{timeScore.toFixed(1)} / {maxScore}</span>
                 </div>
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm font-medium">Time Efficiency</span>
-                    <span className="text-xs text-muted-foreground">{timeScore.toFixed(1)} / {maxScore}</span>
-                  </div>
-                  <Progress value={maxScore ? (timeScore / maxScore) * 100 : 0} className="h-2" />
+                <Progress value={maxScore ? (timeScore / maxScore) * 100 : 0} className="h-2.5" />
+              </div>
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium">Cost Effectiveness</span>
+                  <span className="text-xs text-muted-foreground">{costScore.toFixed(1)} / {maxScore}</span>
                 </div>
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm font-medium">Cost Effectiveness</span>
-                    <span className="text-xs text-muted-foreground">{costScore.toFixed(1)} / {maxScore}</span>
-                  </div>
-                  <Progress value={maxScore ? (costScore / maxScore) * 100 : 0} className="h-2" />
-                </div>
+                <Progress value={maxScore ? (costScore / maxScore) * 100 : 0} className="h-2.5" />
               </div>
             </div>
-
-            {/* Right: AI Performance (New) */}
-            <div className="p-6 rounded-xl bg-card border border-border/50 flex flex-col justify-center">
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-2 mb-2 text-muted-foreground">
-                  <Sparkles className="w-4 h-4" />
-                  <span className="text-sm font-semibold uppercase tracking-wider">AI Prompt Score</span>
-                </div>
-                
-                {/* Score Number */}
-                <p className="text-5xl font-bold text-primary mb-2">
-                  {aiScore ? aiScore.toFixed(0) : "0"} <span className="text-2xl text-muted-foreground font-normal">/ 20</span>
-                </p>
-
-                {/* Stars */}
-                {renderStars(getStarsFromScore(aiScore || 0))}
-
-                {/* Label */}
-                <p className="text-sm font-medium text-foreground mt-4 px-4 py-2 bg-muted/50 rounded-lg inline-block">
-                  {getScoreLabel(aiScore || 0)}
-                </p>
-              </div>
-            </div>
-
           </div>
 
-          <Button onClick={handleComplete} size="lg" className="w-full bg-muted hover:bg-muted/90 h-12 text-lg">
-            Return to Dashboard
-          </Button>
+          {/* --- SECTION 2: AI SCORE (Secondary) --- */}
+          {aiScore !== null && (
+            <div className="mt-10 pt-10 border-t border-border/40">
+              <div className="text-center max-w-xl mx-auto">
+                <div className="flex items-center justify-center gap-2 mb-3 text-muted-foreground">
+                  <Sparkles className="w-5 h-5 text-purple-400" />
+                  <span className="text-sm font-bold uppercase tracking-widest">AI Prompt Score</span>
+                </div>
+                
+                <div className="flex flex-col items-center justify-center">
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-4xl font-bold text-foreground">{aiScore.toFixed(0)}</span>
+                    <span className="text-xl text-muted-foreground">/ 20</span>
+                  </div>
+                  
+                  {renderStars(getStarsFromScore(aiScore))}
+                  
+                  <div className="mt-3 inline-block px-4 py-1.5 bg-muted/40 rounded-full border border-border/50">
+                    <p className="text-sm font-medium text-foreground">
+                      {getScoreLabel(aiScore)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-12 pt-6">
+            <Button onClick={handleComplete} size="lg" className="w-full bg-primary hover:bg-primary/90 h-14 text-lg font-semibold shadow-lg">
+              Return to Dashboard
+            </Button>
+          </div>
         </Card>
       </div>
     </div>
