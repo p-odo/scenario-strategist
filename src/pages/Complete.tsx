@@ -175,11 +175,12 @@ export default function Complete() {
 
   const renderStars = (stars: number) => {
     return (
-      <div className="flex gap-1 justify-center my-2">
+      <div className="flex gap-2 justify-center my-3">
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
-            className={`w-6 h-6 ${
+            // Increased size to w-8 h-8
+            className={`w-8 h-8 ${
               star <= stars
                 ? "fill-yellow-400 text-yellow-400"
                 : "text-muted-foreground/30"
@@ -208,19 +209,18 @@ export default function Complete() {
 
       <div className="container mx-auto px-6 py-12">
         
-        {/* Main Card Container - Using max-w-4xl for a nice wide centered look */}
+        {/* Main Card Container */}
         <Card className="max-w-4xl mx-auto p-10 border-success/20 bg-card/50 backdrop-blur-sm">
           
           <h2 className="text-3xl font-semibold mb-10 text-center">
             You have completed this scenario!
           </h2>
 
-          {/* --- SECTION 1: STRATEGIC SCORE (Main Hero) --- */}
-          <div className="text-center mb-10">
+          {/* --- SECTION 1: STRATEGIC SCORE --- */}
+          <div className="text-center mb-12">
             <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-3">Strategic Score</p>
             <p className="text-7xl font-bold text-primary mb-8">{score?.toFixed(1) || "0.0"}</p>
             
-            {/* Progress Bars - Centered and limited width */}
             <div className="max-w-xl mx-auto space-y-6">
               <div>
                 <div className="flex justify-between items-center mb-2">
@@ -246,25 +246,28 @@ export default function Complete() {
             </div>
           </div>
 
-          {/* --- SECTION 2: AI SCORE (Secondary) --- */}
+          {/* --- SECTION 2: AI SCORE (Bigger Size) --- */}
           {aiScore !== null && (
-            <div className="mt-10 pt-10 border-t border-border/40">
+            <div className="mt-12 pt-12 border-t border-border/40">
               <div className="text-center max-w-xl mx-auto">
-                <div className="flex items-center justify-center gap-2 mb-3 text-muted-foreground">
-                  <Sparkles className="w-5 h-5 text-purple-400" />
-                  <span className="text-sm font-bold uppercase tracking-widest">AI Prompt Score</span>
+                <div className="flex items-center justify-center gap-2 mb-4 text-muted-foreground">
+                  <Sparkles className="w-6 h-6 text-purple-400" />
+                  {/* Increased label size */}
+                  <span className="text-base font-bold uppercase tracking-widest">AI Prompt Score</span>
                 </div>
                 
                 <div className="flex flex-col items-center justify-center">
-                  <div className="flex items-baseline gap-2 mb-2">
-                    <span className="text-4xl font-bold text-foreground">{aiScore.toFixed(0)}</span>
-                    <span className="text-xl text-muted-foreground">/ 20</span>
+                  <div className="flex items-baseline gap-3 mb-2">
+                    {/* Increased Number Size to 6xl */}
+                    <span className="text-6xl font-bold text-foreground">{aiScore.toFixed(0)}</span>
+                    <span className="text-3xl text-muted-foreground font-light">/ 20</span>
                   </div>
                   
                   {renderStars(getStarsFromScore(aiScore))}
                   
-                  <div className="mt-3 inline-block px-4 py-1.5 bg-muted/40 rounded-full border border-border/50">
-                    <p className="text-sm font-medium text-foreground">
+                  <div className="mt-4 inline-block px-6 py-2 bg-muted/40 rounded-full border border-border/50">
+                    {/* Increased label text size */}
+                    <p className="text-base font-medium text-foreground">
                       {getScoreLabel(aiScore)}
                     </p>
                   </div>
@@ -273,9 +276,9 @@ export default function Complete() {
             </div>
           )}
 
-          <div className="mt-12 pt-6">
-            <Button onClick={handleComplete} size="lg" className="w-full bg-primary hover:bg-primary/90 h-14 text-lg font-semibold shadow-lg">
-              Return to Dashboard
+          <div className="mt-16 pt-6">
+            <Button onClick={handleComplete} size="lg" className="w-full bg-primary hover:bg-primary/90 h-14 text-xl font-semibold shadow-lg">
+              Return to Control Center
             </Button>
           </div>
         </Card>
