@@ -485,13 +485,14 @@ export default function Task() {
           <Button 
             onClick={() => {
               setShowSubmittedDialog(false);
+              window.scrollTo(0, 0);
               const nextTaskNumber = parseInt(taskNumber!) + 1;
               if (nextTaskNumber <= tasks.length) {
                 navigate(`/scenario/${scenarioId}/task/${nextTaskNumber}`);
               } else {
                 navigate(`/scenario/${scenarioId}/complete`);
               }
-            }} 
+            }}
             className="w-full"
             size="lg"
           >
