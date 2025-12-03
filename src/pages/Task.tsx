@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { AICheatSheet } from "@/components/AICheatSheet";
-import { MultipleChoiceTask } from "@/components/MultipleChoiceTask";
 import ReactMarkdown from 'react-markdown';
 
 export default function Task() {
@@ -72,8 +71,25 @@ export default function Task() {
       return;
     }
 
+    const isScenario2 = scenarioResult.data.order_index === 2 || scenarioResult.data.name.includes("Scenario 2") || scenarioResult.data.name.includes("Deep-Space");
+
+    // --- NAVIGATION LOGIC ---
+    
+    // 1. Special Case: Scenario 2, Task 2 (Multiple Choice)
+    if (isScenario2 && currentTask.order_index === 2) {
+       navigate(`/scenario/${scenarioId}/task-mcq`, { state: { tasks: allTasks } });
+       return;
+    }
+
+    // 2. Special Case: Task 3 (Copilot Prompting)
     if (currentTask.order_index === 3) {
-      navigate(`/scenario/${scenarioId}/copilot`);
+      if (isScenario2) {
+         // Scenario 2 Copilot Page
+         navigate(`/scenario/${scenarioId}/copilot-s2`, { state: { tasks: allTasks } });
+      } else {
+         // Scenario 1 Copilot Page
+         navigate(`/scenario/${scenarioId}/copilot`, { state: { tasks: allTasks } });
+      }
       return;
     }
 
@@ -83,32 +99,22 @@ export default function Task() {
 
     // --- Pre-fetch AI Reminders ---
     if (currentOptions.length > 0) {
+        // ... (Keep existing logic for pre-fetching reminders) ...
         const optionIds = currentOptions.map((o: any) => o.id);
-        
         try {
-          // 1. Get all Links for these options
-          // Use 'as any' to avoid TS errors for new table
           const { data: links } = await supabase
             .from("option_ai_consideration" as any)
             .select("option_id, reminder_id")
             .in("option_id", optionIds);
-  
-          // Explicitly cast to any[] to avoid "SelectQueryError" issues
+          
           const safeLinks = links as any[] | null;
-
           if (safeLinks && safeLinks.length > 0) {
             const reminderIds = safeLinks.map((l: any) => l.reminder_id);
-            
-            // 2. Get all Messages
             const { data: messages } = await supabase
               .from("responsible_ai_consideration" as any)
               .select("id, message")
               .in("id", reminderIds);
-              
-            // FIX APPLIED HERE: Cast messages to any[] so we can access .message property
             const safeMessages = messages as any[] | null;
-
-            // 3. Create a lookup map { optionId: "Message..." }
             const map: Record<string, string> = {};
             safeLinks.forEach((link: any) => {
               const match = safeMessages?.find((m: any) => m.id === link.reminder_id);
@@ -179,38 +185,6 @@ export default function Task() {
     } catch (error) {
       console.error("Error saving choice:", error);
       toast.error("Failed to save choice");
-    } finally {
-      setIsConfirming(false);
-    }
-  };
-
-  const handleMultipleChoiceConfirm = async (selectedOptions: string[]) => {
-    if (!groupId || !task || selectedOptions.length === 0) return;
-    
-    setIsConfirming(true);
-    try {
-      // Save the primary choice (first ranked option)
-      const { error } = await supabase
-        .from("group_choices")
-        .insert({
-          group_id: groupId,
-          task_id: task.id,
-          option_id: selectedOptions[0],
-        });
-
-      if (error) throw error;
-
-      toast.success("Rankings saved!");
-      
-      const nextTaskNumber = parseInt(taskNumber!) + 1;
-      if (nextTaskNumber <= tasks.length) {
-        navigate(`/scenario/${scenarioId}/task/${nextTaskNumber}`);
-      } else {
-        navigate(`/scenario/${scenarioId}/complete`);
-      }
-    } catch (error) {
-      console.error("Error saving rankings:", error);
-      toast.error("Failed to save rankings");
     } finally {
       setIsConfirming(false);
     }
@@ -294,61 +268,50 @@ export default function Task() {
           </div>
         </div>
 
-        {/* Task 2: Multiple Choice / Ranking Interface */}
-        {parseInt(taskNumber!) === 2 ? (
-          <MultipleChoiceTask 
-            options={options}
-            onConfirm={handleMultipleChoiceConfirm}
-            isConfirming={isConfirming}
-          />
-        ) : (
-          <>
-            {/* Option Selection Grid */}
-            <h3 className="text-xl font-semibold mb-6">YOU HAVE TWO CHOICES:</h3>
-            <div className="grid md:grid-cols-2 gap-6 max-w-6xl">
-              {options.map((option) => (
-                <Card
-                  key={option.id}
-                  className="p-6 cursor-pointer hover:border-primary transition-colors border-border bg-card/50 backdrop-blur-sm group flex flex-col h-full"
-                  onClick={() => handleOptionSelect(option)}
-                >
-                  <div className="flex-1 mb-4">
-                    <div className="flex items-start gap-4 mb-4">
-                      {getIcon(option.icon)}
-                      <div className="flex-1">
-                        <h3 className="text-xl font-semibold mb-3">{option.title}</h3>
-                        <div className="text-muted-foreground">
-                          <ReactMarkdown>{(option.description || '').split('.')[0] + '.'}</ReactMarkdown>
-                        </div>
-                      </div>
+        {/* Option Selection Grid */}
+        <h3 className="text-xl font-semibold mb-6">YOU HAVE TWO CHOICES:</h3>
+        <div className="grid md:grid-cols-2 gap-6 max-w-6xl">
+          {options.map((option) => (
+            <Card
+              key={option.id}
+              className="p-6 cursor-pointer hover:border-primary transition-colors border-border bg-card/50 backdrop-blur-sm group flex flex-col h-full"
+              onClick={() => handleOptionSelect(option)}
+            >
+              <div className="flex-1 mb-4">
+                <div className="flex items-start gap-4 mb-4">
+                  {getIcon(option.icon)}
+                  <div className="flex-1">
+                    <h3 className="text-xl font-semibold mb-3">{option.title}</h3>
+                    <div className="text-muted-foreground">
+                      <ReactMarkdown>{(option.description || '').split('.')[0] + '.'}</ReactMarkdown>
                     </div>
                   </div>
+                </div>
+              </div>
 
-                  <div className="flex flex-wrap gap-2 mt-auto">
-                    {option.cost_label && (
-                      <Badge variant="secondary" className="px-2.5 py-0.5 text-xs gap-1.5 font-medium">
-                        <DollarSign className="w-3 h-3" />
-                        {option.cost_label}
-                      </Badge>
-                    )}
-                    {option.impact_label && (
-                      <Badge variant="secondary" className="px-2.5 py-0.5 text-xs gap-1.5 font-medium">
-                        <Star className="w-3 h-3" />
-                        {option.impact_label}
-                      </Badge>
-                    )}
-                    {option.speed_label && (
-                      <Badge variant="secondary" className="px-2.5 py-0.5 text-xs gap-1.5 font-medium">
-                        <Clock className="w-3 h-3" />
-                        {option.speed_label}
-                      </Badge>
-                    )}
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </>
-        )}
+              <div className="flex flex-wrap gap-2 mt-auto">
+                {option.cost_label && (
+                  <Badge variant="secondary" className="px-2.5 py-0.5 text-xs gap-1.5 font-medium">
+                    <DollarSign className="w-3 h-3" />
+                    {option.cost_label}
+                  </Badge>
+                )}
+                {option.impact_label && (
+                  <Badge variant="secondary" className="px-2.5 py-0.5 text-xs gap-1.5 font-medium">
+                    <Star className="w-3 h-3" />
+                    {option.impact_label}
+                  </Badge>
+                )}
+                {option.speed_label && (
+                  <Badge variant="secondary" className="px-2.5 py-0.5 text-xs gap-1.5 font-medium">
+                    <Clock className="w-3 h-3" />
+                    {option.speed_label}
+                  </Badge>
+                )}
+              </div>
+            </Card>
+          ))}
+        </div>
       </div>
 
       {/* Confirmation Modal */}
