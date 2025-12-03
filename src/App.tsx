@@ -13,6 +13,8 @@ import CopilotFeedback from "./pages/CopilotFeedback";
 import CopilotEnhanced from "./pages/CopilotEnhanced";
 import Complete from "./pages/Complete";
 import NotFound from "./pages/NotFound";
+import CopilotMultipleChoiceTask from "./pages/CopilotMultipleChoiceTask";
+import CopilotTaskScenario2 from "./pages/CopilotTaskScenario2";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +34,8 @@ const App = () => (
           <Route path="/scenario/:scenarioId/copilot/feedback" element={<CopilotFeedback />} />
           <Route path="/scenario/:scenarioId/copilot/enhanced" element={<CopilotEnhanced />} />
           <Route path="/scenario/:scenarioId/complete" element={<Complete />} />
+          <Route path="/scenario/:scenarioId/task-mcq" element={<CopilotMultipleChoiceTask />} />
+          <Route path="/scenario/:scenarioId/copilot-s2" element={<CopilotTaskScenario2 />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
