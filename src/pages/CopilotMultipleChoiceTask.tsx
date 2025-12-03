@@ -249,8 +249,9 @@ export default function CopilotMultipleChoiceTask() {
             <Button 
               onClick={() => {
                 setShowSubmittedDialog(false);
+                window.scrollTo(0, 0);
                 navigate(`/scenario/${scenarioId}/copilot-s2`, { state: { tasks } });
-              }} 
+              }}
               className="w-full"
               size="lg"
             >
