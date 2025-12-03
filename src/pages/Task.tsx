@@ -482,6 +482,21 @@ export default function Task() {
               Please wait for helper instructions before moving on to the next task.
             </p>
           </div>
+          <Button 
+            onClick={() => {
+              setShowSubmittedDialog(false);
+              const nextTaskNumber = parseInt(taskNumber!) + 1;
+              if (nextTaskNumber <= tasks.length) {
+                navigate(`/scenario/${scenarioId}/task/${nextTaskNumber}`);
+              } else {
+                navigate(`/scenario/${scenarioId}/complete`);
+              }
+            }} 
+            className="w-full"
+            size="lg"
+          >
+            Next
+          </Button>
         </DialogContent>
       </Dialog>
     </div>

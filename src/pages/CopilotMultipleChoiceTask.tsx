@@ -246,6 +246,16 @@ export default function CopilotMultipleChoiceTask() {
                 Please wait for helper instructions before moving on to the next task.
               </p>
             </div>
+            <Button 
+              onClick={() => {
+                setShowSubmittedDialog(false);
+                navigate(`/scenario/${scenarioId}/copilot-s2`, { state: { tasks } });
+              }} 
+              className="w-full"
+              size="lg"
+            >
+              Next
+            </Button>
           </DialogContent>
         </Dialog>
       </div>
