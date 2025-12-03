@@ -25,6 +25,7 @@ export default function Task() {
   // Selection State
   const [selectedOption, setSelectedOption] = useState<any>(null);
   const [isConfirming, setIsConfirming] = useState(false);
+  const [showSubmittedDialog, setShowSubmittedDialog] = useState(false);
   
   // Right Column Content State
   const [cheatSheets, setCheatSheets] = useState<any[]>([]);
@@ -175,13 +176,7 @@ export default function Task() {
 
       toast.success("Choice saved!");
       setSelectedOption(null);
-      
-      const nextTaskNumber = parseInt(taskNumber!) + 1;
-      if (nextTaskNumber <= tasks.length) {
-        navigate(`/scenario/${scenarioId}/task/${nextTaskNumber}`);
-      } else {
-        navigate(`/scenario/${scenarioId}/complete`);
-      }
+      setShowSubmittedDialog(true);
     } catch (error) {
       console.error("Error saving choice:", error);
       toast.error("Failed to save choice");
@@ -469,6 +464,23 @@ export default function Task() {
               </Accordion>
             </div>
             
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Submitted Dialog */}
+      <Dialog open={showSubmittedDialog} onOpenChange={setShowSubmittedDialog}>
+        <DialogContent className="max-w-md text-center">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-center">Answer Submitted!</DialogTitle>
+          </DialogHeader>
+          <div className="py-6">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-success/20 flex items-center justify-center">
+              <span className="text-3xl">✓</span>
+            </div>
+            <p className="text-muted-foreground text-lg">
+              Please wait for helper instructions before moving on to the next task.
+            </p>
           </div>
         </DialogContent>
       </Dialog>

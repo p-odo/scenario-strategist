@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Header } from "@/components/Header";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useGroupStore } from "@/hooks/useGroupStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -23,6 +24,7 @@ export default function CopilotMultipleChoiceTask() {
   const [part1Answer, setPart1Answer] = useState<string>("");
   const [part2Answer, setPart2Answer] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSubmittedDialog, setShowSubmittedDialog] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -91,11 +93,9 @@ export default function CopilotMultipleChoiceTask() {
         // timestamp updates automatically
       });
 
-      // Simple toast feedback
-      toast.success("Responses recorded. Proceeding...");
-
-      // Navigate to Task 3 (The Copilot Press Release task)
-      navigate(`/scenario/${scenarioId}/copilot-s2`, { state: { tasks } });
+      // Show submitted dialog instead of navigating
+      toast.success("Responses recorded!");
+      setShowSubmittedDialog(true);
 
     } catch (error) {
       console.error("Error submitting:", error);
@@ -231,6 +231,23 @@ export default function CopilotMultipleChoiceTask() {
           </div>
 
         </Card>
+
+        {/* Submitted Dialog */}
+        <Dialog open={showSubmittedDialog} onOpenChange={setShowSubmittedDialog}>
+          <DialogContent className="max-w-md text-center">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-center">Answer Submitted!</DialogTitle>
+            </DialogHeader>
+            <div className="py-6">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-success/20 flex items-center justify-center">
+                <span className="text-3xl">✓</span>
+              </div>
+              <p className="text-muted-foreground text-lg">
+                Please wait for helper instructions before moving on to the next task.
+              </p>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
