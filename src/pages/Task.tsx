@@ -223,12 +223,7 @@ export default function Task() {
             {tasks.map((t, index) => (
               <div key={t.id} className="flex items-center">
                 <div 
-                  className={`flex items-center gap-2 ${index <= currentTaskIndex ? "" : "opacity-40"} ${index < currentTaskIndex ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}`}
-                  onClick={() => {
-                    if (index < currentTaskIndex) {
-                      navigate(`/scenario/${scenarioId}/task/${index + 1}`);
-                    }
-                  }}
+                  className={`flex items-center gap-2 ${index <= currentTaskIndex ? "" : "opacity-40"}`}
                 >
                   {index < currentTaskIndex ? (
                     <div className="w-10 h-10 rounded-full bg-success flex items-center justify-center text-success-foreground">✓</div>

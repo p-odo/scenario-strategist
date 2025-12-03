@@ -144,12 +144,7 @@ export default function CopilotTaskScenario2() {
             {tasks.map((t, index) => (
               <div key={t.id} className="flex items-center">
                 <div 
-                  className={`flex items-center gap-2 ${index <= activeIndex ? "" : "opacity-40"} ${index < activeIndex ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}`}
-                  onClick={() => {
-                    if (index < activeIndex) {
-                      navigate(`/scenario/${scenarioId}/task/${index + 1}`, { state: { tasks } });
-                    }
-                  }}
+                  className={`flex items-center gap-2 ${index <= activeIndex ? "" : "opacity-40"}`}
                 >
                   {index < activeIndex ? (
                     <div className="w-10 h-10 rounded-full bg-success flex items-center justify-center text-success-foreground">
