@@ -14,6 +14,10 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { AICheatSheet } from "@/components/AICheatSheet";
 import ReactMarkdown from 'react-markdown';
 
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Upload } from "lucide-react";
+
 export default function Task() {
   const { scenarioId, taskNumber } = useParams();
   const { groupId, groupName } = useGroupStore();
@@ -21,6 +25,9 @@ export default function Task() {
   const [task, setTask] = useState<any>(null);
   const [options, setOptions] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
+  const [isUploadTask, setIsUploadTask] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   
   // Selection State
   const [selectedOption, setSelectedOption] = useState<any>(null);
@@ -73,6 +80,7 @@ export default function Task() {
     }
 
     const isScenario2 = scenarioResult.data.order_index === 2 || scenarioResult.data.name.includes("Scenario 2") || scenarioResult.data.name.includes("Deep-Space");
+    const isScenario1 = scenarioResult.data.order_index === 1 || scenarioResult.data.name.includes("Scenario 1");
 
     // --- NAVIGATION LOGIC ---
     
@@ -82,7 +90,12 @@ export default function Task() {
        return;
     }
 
-    // 2. Special Case: Task 3 (Copilot Prompting)
+    // 2. Special Case: Scenario 1, Task 1 (Image Upload)
+    if (isScenario1 && currentTask.order_index === 1) {
+      setIsUploadTask(true);
+    }
+
+    // 3. Special Case: Task 3 (Copilot Prompting)
     if (currentTask.order_index === 3) {
       if (isScenario2) {
          // Scenario 2 Copilot Page
@@ -157,6 +170,46 @@ export default function Task() {
     const sheets = optionCheatSheets?.map((ocs: any) => ocs.ai_cheat_sheets) || [];
     setCheatSheets(sheets);
     setActiveCheatSheetId(sheets[0]?.id);
+  };
+
+  const handleUpload = async () => {
+    if (!uploadFile || !groupId || !task) return;
+
+    setIsUploading(true);
+    try {
+      // 1. Upload image
+      const fileExt = uploadFile.name.split('.').pop();
+      const fileName = `${groupId}/${task.id}/${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from('task_images')
+        .upload(fileName, uploadFile);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('task_images')
+        .getPublicUrl(fileName);
+
+      // 2. Save submission
+      const { error: dbError } = await supabase
+        .from('task_submissions' as any)
+        .insert({
+          group_id: groupId,
+          task_id: task.id,
+          image_url: publicUrl
+        });
+
+      if (dbError) throw dbError;
+
+      toast.success("Submission received!");
+      setUploadFile(null);
+      setShowSubmittedDialog(true);
+    } catch (error) {
+      console.error("Error uploading:", error);
+      toast.error("Failed to upload submission");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleConfirm = async () => {
@@ -259,49 +312,86 @@ export default function Task() {
         </div>
 
         {/* Option Selection Grid */}
-        <h3 className="text-xl font-semibold mb-6">YOU HAVE TWO CHOICES:</h3>
-        <div className="grid md:grid-cols-2 gap-6 max-w-6xl">
-          {options.map((option) => (
-            <Card
-              key={option.id}
-              className="p-6 cursor-pointer hover:border-primary transition-colors border-border bg-card/50 backdrop-blur-sm group flex flex-col h-full"
-              onClick={() => handleOptionSelect(option)}
-            >
-              <div className="flex-1 mb-4">
-                <div className="flex items-start gap-4 mb-4">
-                  {getIcon(option.icon)}
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold mb-3">{option.title}</h3>
-                    <div className="text-muted-foreground">
-                      <ReactMarkdown>{(option.description || '').split('.')[0] + '.'}</ReactMarkdown>
-                    </div>
-                  </div>
+        {isUploadTask ? (
+          <div className="max-w-2xl mx-auto">
+            <Card className="p-8 border-border bg-card/50 backdrop-blur-sm">
+              <h3 className="text-xl font-semibold mb-6 text-center">Upload Your Solution</h3>
+              <div className="space-y-6">
+                <div className="grid w-full max-w-sm items-center gap-1.5 mx-auto">
+                  <Label htmlFor="picture">Image</Label>
+                  <Input 
+                    id="picture" 
+                    type="file" 
+                    accept="image/*"
+                    onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                  />
+                </div>
+                <div className="flex justify-center">
+                  <Button 
+                    onClick={handleUpload} 
+                    disabled={!uploadFile || isUploading}
+                    className="w-full max-w-sm"
+                    size="lg"
+                  >
+                    {isUploading ? (
+                      "Uploading..."
+                    ) : (
+                      <>
+                        <Upload className="mr-2 h-4 w-4" /> Upload Submission
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
-
-              <div className="flex flex-wrap gap-2 mt-auto">
-                {option.cost_label && (
-                  <Badge variant="secondary" className="px-2.5 py-0.5 text-xs gap-1.5 font-medium">
-                    <DollarSign className="w-3 h-3" />
-                    {option.cost_label}
-                  </Badge>
-                )}
-                {option.impact_label && (
-                  <Badge variant="secondary" className="px-2.5 py-0.5 text-xs gap-1.5 font-medium">
-                    <Star className="w-3 h-3" />
-                    {option.impact_label}
-                  </Badge>
-                )}
-                {option.speed_label && (
-                  <Badge variant="secondary" className="px-2.5 py-0.5 text-xs gap-1.5 font-medium">
-                    <Clock className="w-3 h-3" />
-                    {option.speed_label}
-                  </Badge>
-                )}
-              </div>
             </Card>
-          ))}
-        </div>
+          </div>
+        ) : (
+          <>
+            <h3 className="text-xl font-semibold mb-6">YOU HAVE TWO CHOICES:</h3>
+            <div className="grid md:grid-cols-2 gap-6 max-w-6xl">
+              {options.map((option) => (
+                <Card
+                  key={option.id}
+                  className="p-6 cursor-pointer hover:border-primary transition-colors border-border bg-card/50 backdrop-blur-sm group flex flex-col h-full"
+                  onClick={() => handleOptionSelect(option)}
+                >
+                  <div className="flex-1 mb-4">
+                    <div className="flex items-start gap-4 mb-4">
+                      {getIcon(option.icon)}
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold mb-3">{option.title}</h3>
+                        <div className="text-muted-foreground">
+                          <ReactMarkdown>{(option.description || '').split('.')[0] + '.'}</ReactMarkdown>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 mt-auto">
+                    {option.cost_label && (
+                      <Badge variant="secondary" className="px-2.5 py-0.5 text-xs gap-1.5 font-medium">
+                        <DollarSign className="w-3 h-3" />
+                        {option.cost_label}
+                      </Badge>
+                    )}
+                    {option.impact_label && (
+                      <Badge variant="secondary" className="px-2.5 py-0.5 text-xs gap-1.5 font-medium">
+                        <Star className="w-3 h-3" />
+                        {option.impact_label}
+                      </Badge>
+                    )}
+                    {option.speed_label && (
+                      <Badge variant="secondary" className="px-2.5 py-0.5 text-xs gap-1.5 font-medium">
+                        <Clock className="w-3 h-3" />
+                        {option.speed_label}
+                      </Badge>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Confirmation Modal */}
