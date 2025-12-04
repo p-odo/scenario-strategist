@@ -14,6 +14,7 @@ export default function CopilotFeedback() {
   const { scenarioId } = useParams();
   const { groupId, groupName } = useGroupStore();
   const [submission, setSubmission] = useState<any>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -116,8 +117,22 @@ export default function CopilotFeedback() {
           <Card className="p-6 border-border bg-card/50 backdrop-blur-sm">
             <h2 className="text-xl font-semibold mb-4">Your Original Prompt</h2>
             <p className="text-muted-foreground whitespace-pre-wrap">
-              {submission.prompt}
+              {isExpanded
+                ? submission.prompt
+                : submission.prompt?.split("\n").slice(0, 3).join("\n")}
+              {!isExpanded &&
+                submission.prompt?.split("\n").length > 3 &&
+                "..."}
             </p>
+            {submission.prompt?.split("\n").length > 3 && (
+              <Button
+                variant="link"
+                className="p-0 h-auto font-semibold text-primary mt-2"
+                onClick={() => setIsExpanded(!isExpanded)}
+              >
+                {isExpanded ? "Show Less" : "Read More"}
+              </Button>
+            )}
           </Card>
 
           {/* Score and Feedback Grid */}
