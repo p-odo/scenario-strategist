@@ -72,7 +72,7 @@ Return ONLY a valid JSON object with these fields:
 - context_score: score for Context (1-5)
 - source_score: score for Source (1-5)
 - expectation_score: score for Expectation (1-5)
-- feedback: a string explaining why the prompt is good or bad and how to improve it, the string shall cover 1. Goal: Did the prompt clearly state what I want Copilot to do? 2. Context: Did the prompt provide relevant background (audience, domain, constraints)? 3. Source: Did the prompt include references, examples, or data Copilot should use? and 4. Expectation: Did the prompt specify output format, tone, length, and quality?
+- feedback: a string explaining why the prompt is good or bad and how to improve it, the string shall cover 1. Goal: Did the prompt clearly state what I want Copilot to do? 2. Context: Did the prompt provide relevant background (audience, domain, constraints)? 3. Source: Did the prompt include references, examples, or data Copilot should use? and 4. Expectation: Did the prompt specify output format, tone, length, and quality?. Analyse in each part one by one
 - enhanced_prompt: an improved version of the user's prompt that addresses the issues identified
 
 Do not include additional text.`;
