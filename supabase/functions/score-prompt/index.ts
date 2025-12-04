@@ -29,7 +29,7 @@ serve(async (req) => {
 Evaluation Criteria:
 A. Goal: Did the user clearly state what they want Copilot to do?
 B. Context: Did the user provide relevant background (audience, domain, constraints)?
-C. Source: Did the user include references, examples, or data Copilot should use?
+C. Reference to Source Material: Did the user include references, examples, or data Copilot should use?
 D. Expectation: Did the user specify output format, tone, length, and quality?
 
 Scoring Instructions:
@@ -51,7 +51,7 @@ B. Context (Relevant Background Information)
 2 – Poor: Minimal context; important information lacking. 
 1 – Very Poor: No context; prompt isolated and unclear.
 
-C. Source (Reference Material or Data)
+C. Reference to Source Material(Reference Material or Data)
 5 – Excellent: Accurate sources, examples, or data included.
 4 – Good: Some source material provided, but not comprehensive.
 3 – Fair: Vague mention of sources without specifics.
@@ -70,9 +70,9 @@ Return ONLY a valid JSON object with these fields:
 - score: a sum of total score between 0 and 20
 - goal_score: score for Goal (1-5)
 - context_score: score for Context (1-5)
-- source_score: score for Source (1-5)
+- source_score: score for Reference to Source Material (1-5)
 - expectation_score: score for Expectation (1-5)
-- feedback: a string explaining why the prompt is good or bad and how to improve it, the string shall cover 1. Goal: Did the prompt clearly state what I want Copilot to do? 2. Context: Did the prompt provide relevant background (audience, domain, constraints)? 3. Source: Did the prompt include references, examples, or data Copilot should use? and 4. Expectation: Did the prompt specify output format, tone, length, and quality?. Analyse in each part one by one
+- feedback: a string explaining why the prompt is good or bad and how to improve it, the string shall cover 1. Goal: Did the prompt clearly state what I want Copilot to do? 2. Context: Did the prompt provide relevant background (audience, domain, constraints)? 3. Reference to Source Material: Did the prompt include references, examples, or data Copilot should use? and 4. Expectation: Did the prompt specify output format, tone, length, and quality?. Analyse in each part one by one
 - enhanced_prompt: an improved version of the user's prompt that addresses the issues identified
 
 Do not include additional text.`;
