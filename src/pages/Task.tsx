@@ -90,7 +90,7 @@ export default function Task() {
        return;
     }
 
-    // 2. Special Case: Scenario 1, Task 1 (Image Upload)
+    // 2. Special Case: Scenario 1, Task 1 (Embedded Upload)
     if (isScenario1 && currentTask.order_index === 1) {
       setIsUploadTask(true);
     }
@@ -313,37 +313,22 @@ export default function Task() {
 
         {/* Option Selection Grid */}
         {isUploadTask ? (
-          <div className="max-w-2xl mx-auto">
-            <Card className="p-8 border-border bg-card/50 backdrop-blur-sm">
-              <h3 className="text-xl font-semibold mb-6 text-center">Upload Your Solution</h3>
-              <div className="space-y-6">
-                <div className="grid w-full max-w-sm items-center gap-1.5 mx-auto">
-                  <Label htmlFor="picture">Image</Label>
-                  <Input 
-                    id="picture" 
-                    type="file" 
-                    accept="image/*"
-                    onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                  />
-                </div>
-                <div className="flex justify-center">
-                  <Button 
-                    onClick={handleUpload} 
-                    disabled={!uploadFile || isUploading}
-                    className="w-full max-w-sm"
-                    size="lg"
-                  >
-                    {isUploading ? (
-                      "Uploading..."
-                    ) : (
-                      <>
-                        <Upload className="mr-2 h-4 w-4" /> Upload Submission
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
+          <div className="max-w-4xl mx-auto">
+            <Card className="p-0 border-border bg-card/50 backdrop-blur-sm overflow-hidden h-[600px]">
+              <iframe 
+                src="/upload.html" 
+                className="w-full h-full border-0"
+                title="Upload Submission"
+              />
             </Card>
+            <div className="flex justify-end mt-4">
+              <Button 
+                onClick={() => setShowSubmittedDialog(true)} 
+                size="lg"
+              >
+                Continue
+              </Button>
+            </div>
           </div>
         ) : (
           <>
