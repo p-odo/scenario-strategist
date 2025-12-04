@@ -48,7 +48,7 @@ B. Context (Relevant Background Information)
 5 – Excellent: All necessary background details provided (audience, domain, constraints).
 4 – Good: Most relevant context included; minor details missing.
 3 – Fair: Some context, but key details missing.
-2 – Poor: Minimal context; important information lacking.
+2 – Poor: Minimal context; important information lacking. 
 1 – Very Poor: No context; prompt isolated and unclear.
 
 C. Source (Reference Material or Data)
