@@ -93,6 +93,8 @@ export default function Task() {
     // 2. Special Case: Scenario 1, Task 1 (Embedded Upload)
     if (isScenario1 && currentTask.order_index === 1) {
       setIsUploadTask(true);
+    } else {
+      setIsUploadTask(false);
     }
 
     // 3. Special Case: Task 3 (Copilot Prompting)

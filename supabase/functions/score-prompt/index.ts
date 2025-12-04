@@ -60,7 +60,7 @@ C. Source (Reference Material or Data)
 
 D. Expectation (Output Format & Quality)
 5 – Excellent: Clearly specifies output type, tone, length, and quality standards. 
-4 – Good: Indicates output format but lacks minor details.
+4 – Good: Indicates output format but lacks minor details. 
 3 – Fair: General idea of output given, some ambiguity remains.
 2 – Poor: Minimal guidance on output expectations.
 1 – Very Poor: No indication of output format or quality.
