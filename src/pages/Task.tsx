@@ -90,8 +90,8 @@ export default function Task() {
        return;
     }
 
-    // 2. Special Case: Scenario 1, Task 1 (Embedded Upload)
-    if (isScenario1 && currentTask.order_index === 1) {
+    // 2. Special Case: Scenario 1, Task 2 (Embedded Upload)
+    if (isScenario1 && currentTask.order_index === 2) {
       setIsUploadTask(true);
     } else {
       setIsUploadTask(false);
