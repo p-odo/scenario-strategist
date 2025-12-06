@@ -25,7 +25,7 @@ export const Header = ({ groupName, onSwitchGroup }: HeaderProps) => {
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div 
             className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" 
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/home")}
           >
             <Rocket className="w-6 h-6 text-primary" />
             <h1 className="text-xl font-semibold">Space Travel Control Centre</h1>
