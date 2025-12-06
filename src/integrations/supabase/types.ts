@@ -47,6 +47,52 @@ export type Database = {
         }
         Relationships: []
       }
+      choice_submissions: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          option_id: string
+          task_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          option_id: string
+          task_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          option_id?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "choice_submissions_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "choice_submissions_option_id_fkey"
+            columns: ["option_id"]
+            isOneToOne: false
+            referencedRelation: "options"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "choice_submissions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       copilot_submissions: {
         Row: {
           ai_score: number | null
@@ -116,6 +162,7 @@ export type Database = {
           group_id: string
           id: string
           option_id: string
+          option_name: string | null
           task_id: string
         }
         Insert: {
@@ -123,6 +170,7 @@ export type Database = {
           group_id: string
           id?: string
           option_id: string
+          option_name?: string | null
           task_id: string
         }
         Update: {
@@ -130,6 +178,7 @@ export type Database = {
           group_id?: string
           id?: string
           option_id?: string
+          option_name?: string | null
           task_id?: string
         }
         Relationships: [
@@ -222,6 +271,92 @@ export type Database = {
         }
         Relationships: []
       }
+      mcq_options: {
+        Row: {
+          choice_key: string
+          created_at: string
+          description: string | null
+          explanation: string | null
+          id: string
+          is_correct: boolean | null
+          label: string
+          question_identifier: string
+          task_id: string
+        }
+        Insert: {
+          choice_key: string
+          created_at?: string
+          description?: string | null
+          explanation?: string | null
+          id?: string
+          is_correct?: boolean | null
+          label: string
+          question_identifier: string
+          task_id: string
+        }
+        Update: {
+          choice_key?: string
+          created_at?: string
+          description?: string | null
+          explanation?: string | null
+          id?: string
+          is_correct?: boolean | null
+          label?: string
+          question_identifier?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mcq_options_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mcq_submissions: {
+        Row: {
+          answers: Json
+          created_at: string
+          group_id: string
+          id: string
+          score: number | null
+          task_id: string
+        }
+        Insert: {
+          answers: Json
+          created_at?: string
+          group_id: string
+          id?: string
+          score?: number | null
+          task_id: string
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          group_id?: string
+          id?: string
+          score?: number | null
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mcq_submissions_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mcq_submissions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       option_ai_consideration: {
         Row: {
           created_at: string
@@ -301,10 +436,12 @@ export type Database = {
           cost_score: number
           created_at: string
           description: string
+          feedback: string | null
           icon: string | null
           id: string
           impact_label: string | null
           implications: string[] | null
+          is_correct: boolean | null
           speed_label: string | null
           task_id: string
           time_score: number
@@ -316,10 +453,12 @@ export type Database = {
           cost_score: number
           created_at?: string
           description: string
+          feedback?: string | null
           icon?: string | null
           id?: string
           impact_label?: string | null
           implications?: string[] | null
+          is_correct?: boolean | null
           speed_label?: string | null
           task_id: string
           time_score: number
@@ -331,10 +470,12 @@ export type Database = {
           cost_score?: number
           created_at?: string
           description?: string
+          feedback?: string | null
           icon?: string | null
           id?: string
           impact_label?: string | null
           implications?: string[] | null
+          is_correct?: boolean | null
           speed_label?: string | null
           task_id?: string
           time_score?: number
@@ -424,6 +565,8 @@ export type Database = {
           id: string
           order_index: number
           scenario_id: string
+          task_config: Json | null
+          task_type: string
           title: string
         }
         Insert: {
@@ -433,6 +576,8 @@ export type Database = {
           id?: string
           order_index: number
           scenario_id: string
+          task_config?: Json | null
+          task_type?: string
           title: string
         }
         Update: {
@@ -442,6 +587,8 @@ export type Database = {
           id?: string
           order_index?: number
           scenario_id?: string
+          task_config?: Json | null
+          task_type?: string
           title?: string
         }
         Relationships: [
@@ -450,6 +597,45 @@ export type Database = {
             columns: ["scenario_id"]
             isOneToOne: false
             referencedRelation: "scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      upload_submissions: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          image_url: string
+          task_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          image_url: string
+          task_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          image_url?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "upload_submissions_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "upload_submissions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
             referencedColumns: ["id"]
           },
         ]
