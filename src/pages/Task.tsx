@@ -20,15 +20,34 @@ export default function Task() {
     async function resolveTask() {
       if (!scenarioId || !taskNumber) return;
 
-      const { data: tasks, error } = await supabase
-        .from("tasks")
-        .select("*, options(*)")
-        .eq("scenario_id", scenarioId)
-        .order("order_index");
+      // Fetch scenario and tasks
+      const [scenarioResult, tasksResult] = await Promise.all([
+        supabase.from("scenarios").select("*").eq("id", scenarioId).single(),
+        supabase.from("tasks").select("*, options(*)").eq("scenario_id", scenarioId).order("order_index")
+      ]);
 
-      if (error || !tasks) {
+      if (tasksResult.error || !tasksResult.data) {
         toast.error("Could not load tasks");
         return;
+      }
+
+      let tasks = tasksResult.data;
+      const scenario = scenarioResult.data;
+
+      // SWAP LOGIC FOR SCENARIO 1: Swap Task 1 (Choice) and Task 2 (Upload)
+      if (scenario && (scenario.name.includes("Scenario 1") || scenario.order_index === 1)) {
+        const t1 = tasks.find(t => t.order_index === 1);
+        const t2 = tasks.find(t => t.order_index === 2);
+        
+        if (t1 && t2) {
+          // Swap order_index
+          const temp = t1.order_index;
+          t1.order_index = t2.order_index;
+          t2.order_index = temp;
+          
+          // Re-sort
+          tasks.sort((a, b) => a.order_index - b.order_index);
+        }
       }
 
       const currentTask = tasks.find((t) => t.order_index === parseInt(taskNumber));

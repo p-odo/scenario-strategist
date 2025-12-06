@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"; // Make sure you have this or use
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, FileUp, X, CheckCircle2 } from "lucide-react";
+import { Upload, FileUp, X, CheckCircle2, ExternalLink } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 
 interface UploadTaskProps {
@@ -139,6 +139,17 @@ export default function UploadTask({ task, tasks }: UploadTaskProps) {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Copilot Link Button */}
+        <div className="flex justify-center mb-8">
+          <Button 
+            variant="secondary"
+            className="gap-2"
+            onClick={() => window.open("https://m365.cloud.microsoft/chat/?FORM=undexpand&auth=2&internalredirect=CCM", "_blank")}
+          >
+            Open Microsoft Copilot <ExternalLink className="w-4 h-4" />
+          </Button>
         </div>
 
         {/* Upload Interface (Replaces iframe) */}
