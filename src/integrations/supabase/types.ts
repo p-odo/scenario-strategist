@@ -7,13 +7,52 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
-  }
   public: {
     Tables: {
+      mcq_options: {
+        Row: {
+          id: string
+          task_id: string
+          question_identifier: string
+          choice_key: string
+          label: string
+          description: string | null
+          explanation: string | null
+          is_correct: boolean | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          task_id: string
+          question_identifier: string
+          choice_key: string
+          label: string
+          description?: string | null
+          explanation?: string | null
+          is_correct?: boolean | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          task_id?: string
+          question_identifier?: string
+          choice_key?: string
+          label?: string
+          description?: string | null
+          explanation?: string | null
+          is_correct?: boolean | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mcq_options_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       ai_cheat_sheets: {
         Row: {
           created_at: string
@@ -46,6 +85,52 @@ export type Database = {
           what_is?: string
         }
         Relationships: []
+      }
+      choice_submissions: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          option_id: string
+          task_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          option_id: string
+          task_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          option_id?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "choice_submissions_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "choice_submissions_option_id_fkey"
+            columns: ["option_id"]
+            isOneToOne: false
+            referencedRelation: "options"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "choice_submissions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       copilot_submissions: {
         Row: {
@@ -106,52 +191,6 @@ export type Database = {
             columns: ["scenario_id"]
             isOneToOne: false
             referencedRelation: "scenarios"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      group_choices: {
-        Row: {
-          created_at: string
-          group_id: string
-          id: string
-          option_id: string
-          task_id: string
-        }
-        Insert: {
-          created_at?: string
-          group_id: string
-          id?: string
-          option_id: string
-          task_id: string
-        }
-        Update: {
-          created_at?: string
-          group_id?: string
-          id?: string
-          option_id?: string
-          task_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_choices_group_id_fkey"
-            columns: ["group_id"]
-            isOneToOne: false
-            referencedRelation: "groups"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "group_choices_option_id_fkey"
-            columns: ["option_id"]
-            isOneToOne: false
-            referencedRelation: "options"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "group_choices_task_id_fkey"
-            columns: ["task_id"]
-            isOneToOne: false
-            referencedRelation: "tasks"
             referencedColumns: ["id"]
           },
         ]
@@ -221,6 +260,48 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      mcq_submissions: {
+        Row: {
+          answers: Json
+          created_at: string
+          group_id: string
+          id: string
+          score: number | null
+          task_id: string
+        }
+        Insert: {
+          answers: Json
+          created_at?: string
+          group_id: string
+          id?: string
+          score?: number | null
+          task_id: string
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          group_id?: string
+          id?: string
+          score?: number | null
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mcq_submissions_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mcq_submissions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       option_ai_consideration: {
         Row: {
@@ -309,6 +390,8 @@ export type Database = {
           task_id: string
           time_score: number
           title: string
+          feedback: string | null
+          is_correct: boolean | null
         }
         Insert: {
           business_impact_score: number
@@ -324,6 +407,8 @@ export type Database = {
           task_id: string
           time_score: number
           title: string
+          feedback?: string | null
+          is_correct?: boolean | null
         }
         Update: {
           business_impact_score?: number
@@ -339,6 +424,8 @@ export type Database = {
           task_id?: string
           time_score?: number
           title?: string
+          feedback?: string | null
+          is_correct?: boolean | null
         }
         Relationships: [
           {
@@ -425,6 +512,8 @@ export type Database = {
           order_index: number
           scenario_id: string
           title: string
+          task_type: "CHOICE" | "UPLOAD" | "MCQ" | "COPILOT"
+          task_config: Json | null
         }
         Insert: {
           created_at?: string
@@ -434,6 +523,8 @@ export type Database = {
           order_index: number
           scenario_id: string
           title: string
+          task_type?: "CHOICE" | "UPLOAD" | "MCQ" | "COPILOT"
+          task_config?: Json | null
         }
         Update: {
           created_at?: string
@@ -443,6 +534,8 @@ export type Database = {
           order_index?: number
           scenario_id?: string
           title?: string
+          task_type?: "CHOICE" | "UPLOAD" | "MCQ" | "COPILOT"
+          task_config?: Json | null
         }
         Relationships: [
           {
@@ -450,6 +543,45 @@ export type Database = {
             columns: ["scenario_id"]
             isOneToOne: false
             referencedRelation: "scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      upload_submissions: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          image_url: string
+          task_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          image_url: string
+          task_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          image_url?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "upload_submissions_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "upload_submissions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
             referencedColumns: ["id"]
           },
         ]
@@ -496,128 +628,3 @@ export type Database = {
     }
   }
 }
-
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
-
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
-
-export type Tables<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
-    }
-    ? R
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
-      }
-      ? R
-      : never
-    : never
-
-export type TablesInsert<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
-    }
-    ? I
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
-      }
-      ? I
-      : never
-    : never
-
-export type TablesUpdate<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
-    }
-    ? U
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
-      }
-      ? U
-      : never
-    : never
-
-export type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
-
-export type CompositeTypes<
-  PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
-
-export const Constants = {
-  public: {
-    Enums: {
-      app_role: ["admin", "user"],
-    },
-  },
-} as const
